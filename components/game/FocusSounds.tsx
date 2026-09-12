@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AMBIENTS } from "@/lib/ambient";
 import { useAudio } from "./AudioProvider";
@@ -61,19 +62,35 @@ export default function FocusSounds({ open, onClose }: { open: boolean; onClose:
 
               return (
                 <li key={a.id}>
-                  <div
-                    className="rounded-xl border px-2.5 py-2 transition-colors"
+                  <motion.div
+                    className="relative rounded-xl border px-2.5 py-2 transition-colors"
+                    animate={reduceMotion ? undefined : { scale: on ? 1.03 : 1 }}
+                    whileHover={reduceMotion ? undefined : { scale: on ? 1.05 : 1.02 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                    transition={SPRING.snappy}
                     style={{
                       borderColor: on ? `${a.tint}77` : "rgba(255,255,255,.08)",
                       background: on ? `${a.tint}14` : "rgba(255,255,255,.02)",
                     }}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        onClick={() => toggleAmbient(a.id)}
-                        aria-pressed={on}
-                        aria-label={`${on ? "Stop" : "Play"} ${a.label}`}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-base transition-transform active:scale-90"
+                    {/*
+                      The toggle covers the whole row but sits behind its
+                      contents, because the volume slider can't live inside a
+                      button. Everything above it ignores the pointer except
+                      the slider, so a click anywhere else lands here.
+                    */}
+                    <button
+                      onClick={() => toggleAmbient(a.id)}
+                      aria-pressed={on}
+                      aria-label={`${on ? "Stop" : "Play"} ${a.label}`}
+                      className="absolute inset-0 z-0 rounded-xl focus-visible:outline-none focus-visible:ring-2"
+                      style={{ "--tw-ring-color": a.tint } as CSSProperties}
+                    />
+
+                    <div className="pointer-events-none relative z-10 flex items-center gap-2.5">
+                      <span
+                        aria-hidden
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-base transition-colors"
                         style={{
                           background: on ? `${a.tint}2e` : "rgba(255,255,255,.05)",
                           boxShadow: on ? `0 0 16px -6px ${a.tint}` : undefined,
@@ -87,7 +104,7 @@ export default function FocusSounds({ open, onClose }: { open: boolean; onClose:
                         >
                           {a.icon}
                         </motion.span>
-                      </button>
+                      </span>
 
                       <span
                         className="w-[72px] shrink-0 text-[12px] font-semibold"
@@ -104,7 +121,7 @@ export default function FocusSounds({ open, onClose }: { open: boolean; onClose:
                         value={level}
                         onChange={(e) => setAmbientLevel(a.id, Number(e.target.value))}
                         aria-label={`${a.label} volume`}
-                        className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-white/12
+                        className="pointer-events-auto h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-white/12
                           [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none
                           [&::-webkit-slider-thumb]:rounded-full"
                         style={{
@@ -120,7 +137,7 @@ export default function FocusSounds({ open, onClose }: { open: boolean; onClose:
 
                     {/* level meter, animates only while playing */}
                     {on && !reduceMotion && (
-                      <div className="mt-1.5 flex h-3 items-end gap-0.5 pl-[42px]">
+                      <div className="pointer-events-none relative z-10 mt-1.5 flex h-3 items-end gap-0.5 pl-[42px]">
                         {Array.from({ length: 14 }).map((_, i) => (
                           <motion.span
                             key={i}
@@ -137,7 +154,7 @@ export default function FocusSounds({ open, onClose }: { open: boolean; onClose:
                         ))}
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 </li>
               );
             })}
