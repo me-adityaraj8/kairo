@@ -9,3 +9,11 @@ declare module "next-auth" {
     };
   }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    /** set once our own user id has been resolved from the email */
+    verified?: boolean;
+  }
+}

@@ -101,16 +101,29 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user }) {
-      if (user?.id) token.id = user.id;
-
-      // OAuth users get their id resolved from the row created above
-      if (!token.id && token.email) {
-        const row = await prisma.user.findUnique({
-          where: { email: token.email.toLowerCase() },
-          select: { id: true },
-        });
-        if (row) token.id = row.id;
+    async jwt({ token, user, account }) {
+      /*
+       * Always resolve our own user id from the email.
+       *
+       * Without an adapter, an OAuth sign-in hands back the *provider's* user
+       * id (GitHub's numeric id, Google's sub), not our primary key. Trusting
+       * user.id therefore puts a foreign id in the token and every lookup
+       * misses. The email is the stable link to our row for both providers.
+       */
+      // `verified` makes this cost one lookup per session, not one per request,
+      // while still healing tokens issued before this fix.
+      if (account || !token.id || !token.verified) {
+        const email = (user?.email ?? token.email)?.toLowerCase();
+        if (email) {
+          const row = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true },
+          });
+          if (row) {
+            token.id = row.id;
+            token.verified = true;
+          }
+        }
       }
 
       return token;
