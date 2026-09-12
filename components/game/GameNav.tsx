@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useAudio } from "./AudioProvider";
 
 const LINKS = [
   { href: "/app", label: "Quests", icon: "⚔️" },
@@ -87,9 +88,13 @@ function NavItem({
   reduceMotion: boolean;
   stacked?: boolean;
 }) {
+  const { play } = useAudio();
+
   return (
     <Link
       href={href}
+      onClick={() => play("click")}
+      onPointerEnter={() => play("hover")}
       aria-current={active ? "page" : undefined}
       className={`relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 transition-colors
         ${stacked ? "w-14 py-2" : "min-w-[64px]"} ${active ? "text-gold" : "text-dim hover:text-text"}`}

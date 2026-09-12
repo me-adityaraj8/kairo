@@ -31,10 +31,14 @@ export const popIn: Variants = {
   show: { opacity: 1, scale: 1, transition: SPRING.dramatic },
 };
 
-/** Deterministic pseudo-random so server and client markup agree. */
+/**
+ * Deterministic pseudo-random so server and client markup agree.
+ * Rounded because Math.sin's last bits can differ between Node and browsers,
+ * which is enough to trip React hydration warnings on inline styles.
+ */
 export function seeded(index: number, salt = 1) {
   const value = Math.sin((index + 1) * 12.9898 * salt) * 43758.5453;
-  return value - Math.floor(value);
+  return Math.round((value - Math.floor(value)) * 1e5) / 1e5;
 }
 
 /** Even radial spread for particle bursts. */

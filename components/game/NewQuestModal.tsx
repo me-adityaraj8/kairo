@@ -7,6 +7,7 @@ import { REWARD_PREVIEW, RARITY_FOR_DIFFICULTY, RARITY, attributeIcon } from "@/
 import { SPRING } from "@/lib/motion";
 import GameButton from "./GameButton";
 import GameInput from "./GameInput";
+import { useAudio } from "./AudioProvider";
 
 const DIFFICULTIES: Difficulty[] = ["EASY", "NORMAL", "HARD", "EPIC"];
 
@@ -28,9 +29,11 @@ export default function NewQuestModal({
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  const { play } = useAudio();
 
   useEffect(() => {
     firstFieldRef.current?.focus();
+    play("open");
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -58,6 +61,7 @@ export default function NewQuestModal({
 
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
   async function onSubmit(e: React.FormEvent) {

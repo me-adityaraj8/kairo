@@ -9,6 +9,9 @@ import Shimmer from "@/components/game/Shimmer";
 import Toast from "@/components/game/Toast";
 import ShopItem, { ShopEntry } from "@/components/game/ShopItem";
 import RewardFlight, { Flight } from "@/components/game/RewardFlight";
+import WorldBackground from "@/components/game/WorldBackground";
+import AudioControls from "@/components/game/AudioControls";
+import { useAudio } from "@/components/game/AudioProvider";
 import { riseIn, stagger } from "@/lib/motion";
 
 export default function ShopGrid() {
@@ -21,6 +24,7 @@ export default function ShopGrid() {
 
   const goldAnchor = useRef<HTMLDivElement>(null);
   const flightId = useRef(0);
+  const { play } = useAudio();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/shop");
@@ -44,9 +48,12 @@ export default function ShopGrid() {
       const data = await res.json();
 
       if (!res.ok) {
+        play("error");
         setToast(data.error ?? "Purchase failed");
         return;
       }
+
+      play("purchase");
 
       const goldBox = goldAnchor.current?.getBoundingClientRect();
       if (origin && goldBox) {
@@ -68,6 +75,7 @@ export default function ShopGrid() {
       setItems((prev) => (prev ? prev.map((i) => (i.slug === item.slug ? { ...i, owned: true } : i)) : prev));
       setAnnouncement(`Purchased ${item.name}. ${data.gold} gold remaining.`);
     } catch {
+      play("error");
       setToast("Connection lost — purchase not saved");
     } finally {
       setBuying(null);
@@ -76,6 +84,7 @@ export default function ShopGrid() {
 
   return (
     <>
+      <WorldBackground />
       <Ambient count={12} />
       <GameNav />
 
@@ -89,12 +98,15 @@ export default function ShopGrid() {
             <h1 className="font-display text-xl text-gold text-glow-gold sm:text-2xl">Tavern Shop</h1>
             <p className="mt-1 text-sm text-dim">Trophies for the work you already finished.</p>
           </div>
-          <div
-            ref={goldAnchor}
-            className="flex items-center gap-2 rounded-xl border border-gold/35 bg-gold/12 px-3.5 py-2 backdrop-blur"
-          >
-            <span aria-hidden="true">🪙</span>
-            <Counter value={gold} className="text-base" />
+          <div className="flex items-center gap-2.5">
+            <div
+              ref={goldAnchor}
+              className="flex items-center gap-2 rounded-xl border border-gold/35 bg-gold/12 px-3.5 py-2 backdrop-blur"
+            >
+              <span aria-hidden="true">🪙</span>
+              <Counter value={gold} className="text-base" />
+            </div>
+            <AudioControls />
           </div>
         </header>
 

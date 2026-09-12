@@ -3,6 +3,7 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { SPRING } from "@/lib/motion";
+import { useAudio } from "./AudioProvider";
 
 type Variant = "primary" | "ghost" | "danger" | "gold";
 
@@ -20,16 +21,25 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const GameButton = forwardRef<HTMLButtonElement, Props>(function GameButton(
-  { variant = "primary", size = "md", className = "", children, disabled, ...props },
+  { variant = "primary", size = "md", className = "", children, disabled, onClick, onPointerEnter, ...props },
   ref
 ) {
   const reduceMotion = useReducedMotion();
+  const { play } = useAudio();
   const sizing = size === "sm" ? "px-3.5 py-2 text-xs" : "px-5 py-2.5 text-sm";
 
   return (
     <motion.button
       ref={ref}
       disabled={disabled}
+      onClick={(e) => {
+        if (!disabled) play("click");
+        onClick?.(e as React.MouseEvent<HTMLButtonElement>);
+      }}
+      onPointerEnter={(e) => {
+        if (!disabled) play("hover");
+        onPointerEnter?.(e as React.PointerEvent<HTMLButtonElement>);
+      }}
       whileHover={disabled || reduceMotion ? undefined : { y: -2, scale: 1.03 }}
       whileTap={disabled || reduceMotion ? undefined : { y: 2, scale: 0.96 }}
       transition={SPRING.snappy}

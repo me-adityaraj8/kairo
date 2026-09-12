@@ -1,22 +1,24 @@
 "use client";
 
+import { forwardRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Quest } from "@/lib/types";
 import { REWARD_PREVIEW, attributeIcon, rarityOf } from "@/lib/rarity";
 import { SPRING } from "@/lib/motion";
 import GameButton from "./GameButton";
 
-export default function QuestCard({
-  quest,
-  busy,
-  onComplete,
-  onDelete,
-}: {
+type QuestCardProps = {
   quest: Quest;
   busy: boolean;
   onComplete: () => void;
   onDelete: () => void;
-}) {
+};
+
+// forwardRef because AnimatePresence mode="popLayout" hands a ref to each child.
+const QuestCard = forwardRef<HTMLLIElement, QuestCardProps>(function QuestCard(
+  { quest, busy, onComplete, onDelete },
+  ref
+) {
   const reduceMotion = useReducedMotion();
   const rarity = rarityOf(quest.difficulty);
   const reward = REWARD_PREVIEW[quest.difficulty];
@@ -24,6 +26,7 @@ export default function QuestCard({
   if (quest.done) {
     return (
       <motion.li
+        ref={ref}
         layout
         initial={false}
         animate={{ opacity: 1 }}
@@ -52,6 +55,7 @@ export default function QuestCard({
 
   return (
     <motion.li
+      ref={ref}
       id={`quest-${quest.id}`}
       layout
       initial={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -121,7 +125,9 @@ export default function QuestCard({
       </div>
     </motion.li>
   );
-}
+});
+
+export default QuestCard;
 
 const Reward = ({ tint, bg, label }: { tint: string; bg: string; label: string }) => (
   <span

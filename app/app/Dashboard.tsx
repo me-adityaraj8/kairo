@@ -16,6 +16,9 @@ import RewardFlight, { Flight } from "@/components/game/RewardFlight";
 import GameButton from "@/components/game/GameButton";
 import Toast from "@/components/game/Toast";
 import Shimmer from "@/components/game/Shimmer";
+import WorldBackground from "@/components/game/WorldBackground";
+import AudioControls from "@/components/game/AudioControls";
+import { useAudio } from "@/components/game/AudioProvider";
 
 export default function Dashboard() {
   const [character, setCharacter] = useState<Character | null>(null);
@@ -33,6 +36,7 @@ export default function Dashboard() {
   const goldAnchor = useRef<HTMLDivElement>(null);
   const xpAnchor = useRef<HTMLDivElement>(null);
   const flightId = useRef(0);
+  const { play } = useAudio();
 
   const load = useCallback(async () => {
     const [charRes, questRes] = await Promise.all([fetch("/api/character"), fetch("/api/quests")]);
@@ -96,6 +100,9 @@ export default function Dashboard() {
 
       if (origin) launchFlight(origin, result.xpGained, result.goldGained);
 
+      play("complete");
+      setTimeout(() => play("coin"), 260);
+
       setCharacter((prev) =>
         prev
           ? {
@@ -115,9 +122,14 @@ export default function Dashboard() {
         `Gained ${result.xpGained} XP and ${result.goldGained} gold. ${result.attribute.name} is now level ${result.attribute.level}.`
       );
 
+      if (result.streak > (prevCharacter?.user.streak ?? 0)) {
+        setTimeout(() => play("streak"), 520);
+      }
+
       if (result.leveledUp) {
         setCelebrate(true);
         setTimeout(() => setCelebrate(false), 1000);
+        setTimeout(() => play("levelup"), 620);
         setTimeout(
           () =>
             setLevelUp({
@@ -132,6 +144,7 @@ export default function Dashboard() {
     } catch {
       setQuests(prevQuests);
       setCharacter(prevCharacter);
+      play("error");
       setToast("Connection lost — quest not saved");
     } finally {
       setInFlight((prev) => {
@@ -160,6 +173,7 @@ export default function Dashboard() {
 
   return (
     <>
+      <WorldBackground />
       <Ambient />
       <GameNav />
 
@@ -168,7 +182,10 @@ export default function Dashboard() {
           {announcement}
         </div>
 
-        <h1 className="sr-only">Kairo quest log</h1>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h1 className="font-display text-lg text-gold text-glow-gold">Kairo</h1>
+          <AudioControls />
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
           {/* character + hud */}
