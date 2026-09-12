@@ -11,6 +11,7 @@ export const SHORTCUTS: [string, string][] = [
   ["Q", "Quest log"],
   ["S", "Tavern shop"],
   ["A", "Hall of deeds"],
+  ["C", "Character"],
   ["B", "Bag"],
   ["F", "Focus mode"],
   ["G", "Open a chest"],
@@ -60,6 +61,9 @@ export function useShortcuts(handlers: Handlers) {
           break;
         case "b":
           router.push("/app/bag");
+          break;
+        case "c":
+          router.push("/app/character");
           break;
         case "f":
           e.preventDefault();
