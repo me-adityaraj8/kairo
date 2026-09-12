@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { XP_FOR_LEVEL } from "@/lib/engine";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const sessionUser = await getSessionUser();

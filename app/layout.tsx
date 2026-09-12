@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, IBM_Plex_Mono } from "next/font/google";
 import Providers from "@/components/Providers";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const pixelFont = Press_Start_2P({
@@ -18,6 +19,7 @@ const monoFont = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     template: "%s · Life RPG",
     default: "Life RPG",
