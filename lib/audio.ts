@@ -53,6 +53,7 @@ class AudioEngine {
   private master: GainNode | null = null;
   private sfxBus: GainNode | null = null;
   private ambientBus: GainNode | null = null;
+  private ambientVolume: GainNode | null = null;
   private settings: AudioSettings = DEFAULT_SETTINGS;
   private noiseBuffer: AudioBuffer | null = null;
 
@@ -81,9 +82,25 @@ class AudioEngine {
       this.master = this.ctx.createGain();
       this.sfxBus = this.ctx.createGain();
       this.ambientBus = this.ctx.createGain();
+      this.ambientVolume = this.ctx.createGain();
+
+      /*
+       * Soundscapes layer freely, so their sum has to be caught before it
+       * reaches the master. The limiter sits ahead of the user's volume
+       * control: it always sees the same signal, so lowering the slider
+       * turns the mix down without changing how it is being held.
+       */
+      const limiter = this.ctx.createDynamicsCompressor();
+      limiter.threshold.value = -10;
+      limiter.knee.value = 8;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.004;
+      limiter.release.value = 0.25;
 
       this.sfxBus.connect(this.master);
-      this.ambientBus.connect(this.master);
+      this.ambientBus.connect(limiter);
+      limiter.connect(this.ambientVolume);
+      this.ambientVolume.connect(this.master);
       this.master.connect(this.ctx.destination);
 
       this.applySettings();
@@ -98,11 +115,11 @@ class AudioEngine {
   }
 
   private applySettings() {
-    if (!this.ctx || !this.master || !this.sfxBus || !this.ambientBus) return;
+    if (!this.ctx || !this.master || !this.sfxBus || !this.ambientVolume) return;
     const t = this.ctx.currentTime;
     this.master.gain.setTargetAtTime(this.settings.muted ? 0 : 1, t, 0.03);
     this.sfxBus.gain.setTargetAtTime(this.settings.sfx, t, 0.03);
-    this.ambientBus.gain.setTargetAtTime(this.settings.ambient, t, 0.15);
+    this.ambientVolume.gain.setTargetAtTime(this.settings.ambient, t, 0.15);
   }
 
   /** Shared 2s noise bed, reused by sfx and ambient generators. */
