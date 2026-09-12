@@ -31,7 +31,7 @@ export type Character = {
   };
   pendingChests?: number;
   attributes: CharacterAttribute[];
-  owned: { slug: string; payload: string }[];
+  owned: { slug: string; payload: string; rarity?: string; slot?: string; equipped?: boolean }[];
 };
 
 export type CompleteResult = {

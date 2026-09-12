@@ -29,6 +29,35 @@
   --legendary: #ffb02e;
 }
 
+/* Light theme is a redesign, not an inversion: warm parchment ground,
+   darkened rarity hues so they stay legible on a pale surface. */
+:root[data-theme="light"] {
+  --bg-deep: #efe9f5;
+  --bg-mid: #f7f3fb;
+  --bg-raise: #ffffff;
+
+  --surface: rgba(28, 16, 54, 0.045);
+  --surface-strong: rgba(255, 255, 255, 0.85);
+  --stroke: rgba(38, 22, 70, 0.14);
+  --stroke-strong: rgba(38, 22, 70, 0.26);
+
+  --text: #1d1430;
+  --text-dim: #5c5175;
+
+  --gold: #b4780c;
+  --gold-deep: #8f5a05;
+  --xp: #0d8a80;
+  --xp-deep: #076b6a;
+  --danger: #c32f48;
+  --violet: #7b30c9;
+  --blue: #1f6fd0;
+
+  --common: #5f6b80;
+  --rare: #1f6fd0;
+  --epic: #7b30c9;
+  --legendary: #a9710a;
+}
+
 html,
 body {
   max-width: 100%;
@@ -111,4 +140,13 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* the in-app toggle, for players whose OS preference says otherwise */
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

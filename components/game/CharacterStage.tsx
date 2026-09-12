@@ -2,10 +2,14 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { seeded } from "@/lib/motion";
+import { nextTier, tierFor } from "@/lib/evolution";
+import { RARITY, Rarity } from "@/lib/rarity";
+
+type Owned = { slug: string; payload: string; rarity?: string; slot?: string; equipped?: boolean };
 
 /**
- * Hero centrepiece: an avatar on a lit pedestal that breathes, floats and
- * carries whatever the player has bought as orbiting trophies.
+ * Hero centrepiece. Appearance is driven by level tier, so progression is
+ * visible rather than just a number going up.
  */
 export default function CharacterStage({
   displayName,
@@ -15,11 +19,16 @@ export default function CharacterStage({
 }: {
   displayName: string;
   level: number;
-  owned: { slug: string; payload: string }[];
+  owned: Owned[];
   celebrate: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const initial = displayName.trim().charAt(0).toUpperCase() || "A";
+  const tier = tierFor(level);
+  const upcoming = nextTier(level);
+
+  const equipped = owned.filter((o) => o.equipped);
+  const badges = equipped.length ? equipped : owned.slice(0, 6);
 
   return (
     <div className="relative flex flex-col items-center justify-end pb-2 pt-6">
@@ -28,8 +37,7 @@ export default function CharacterStage({
         aria-hidden="true"
         className="pointer-events-none absolute bottom-10 h-24 w-56 rounded-[50%] blur-2xl sm:w-72"
         style={{
-          background:
-            "radial-gradient(ellipse at center, rgba(255,197,66,.38) 0%, rgba(177,92,255,.16) 45%, transparent 72%)",
+          background: `radial-gradient(ellipse at center, ${tier.tint}55 0%, rgba(177,92,255,.16) 45%, transparent 72%)`,
         }}
       />
 
@@ -38,24 +46,23 @@ export default function CharacterStage({
         aria-hidden="true"
         className="pointer-events-none absolute top-2 h-52 w-52 rounded-full blur-2xl sm:h-64 sm:w-64"
         style={{
-          background:
-            "radial-gradient(circle, rgba(177,92,255,.34) 0%, rgba(76,159,254,.14) 50%, transparent 70%)",
+          background: `radial-gradient(circle, ${tier.tint}44 0%, rgba(76,159,254,.14) 50%, transparent 70%)`,
         }}
         animate={reduceMotion ? undefined : { opacity: [0.55, 0.9, 0.55], scale: [1, 1.06, 1] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* orbiting sparks */}
+      {/* tier motes: more of them at higher tiers */}
       {!reduceMotion &&
-        Array.from({ length: 6 }).map((_, i) => {
-          const angle = (i / 6) * Math.PI * 2;
+        Array.from({ length: tier.motes }).map((_, i) => {
+          const angle = (i / Math.max(1, tier.motes)) * Math.PI * 2;
           const radius = 86;
           return (
             <motion.span
               key={i}
               aria-hidden="true"
-              className="absolute h-1.5 w-1.5 rounded-full bg-gold"
-              style={{ top: "42%", boxShadow: "0 0 10px rgba(255,197,66,.9)" }}
+              className="absolute h-1.5 w-1.5 rounded-full"
+              style={{ top: "42%", background: tier.tint, boxShadow: `0 0 10px ${tier.tint}` }}
               animate={{
                 x: [Math.cos(angle) * radius, Math.cos(angle + Math.PI) * radius, Math.cos(angle) * radius],
                 y: [
@@ -63,7 +70,7 @@ export default function CharacterStage({
                   Math.sin(angle + Math.PI) * radius * 0.34,
                   Math.sin(angle) * radius * 0.34,
                 ],
-                opacity: [0.25, 0.85, 0.25],
+                opacity: [0.25, 0.9, 0.25],
               }}
               transition={{ duration: 9 + seeded(i, 2) * 5, repeat: Infinity, ease: "easeInOut" }}
             />
@@ -89,12 +96,11 @@ export default function CharacterStage({
               ? { duration: 0.8, ease: "easeOut" }
               : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
           }
-          className="grid h-32 w-32 place-items-center rounded-[2rem] border border-white/20 sm:h-36 sm:w-36"
+          className="grid h-32 w-32 place-items-center rounded-[2rem] border sm:h-36 sm:w-36"
           style={{
-            background:
-              "linear-gradient(160deg, rgba(177,92,255,.55) 0%, rgba(76,159,254,.32) 45%, rgba(8,5,18,.85) 100%)",
-            boxShadow:
-              "0 0 42px -6px rgba(177,92,255,.65), 0 18px 40px -18px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.28)",
+            borderColor: tier.ring,
+            background: tier.aura,
+            boxShadow: `0 0 42px -6px ${tier.tint}aa, 0 18px 40px -18px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.28)`,
           }}
         >
           <span className="font-display text-5xl text-text drop-shadow-[0_3px_10px_rgba(0,0,0,.6)] sm:text-6xl">
@@ -120,20 +126,36 @@ export default function CharacterStage({
         {displayName}
       </p>
 
-      {owned.length > 0 && (
+      <p
+        className="relative z-10 mt-0.5 text-[11px] font-bold uppercase tracking-[0.18em]"
+        style={{ color: tier.tint }}
+      >
+        {tier.title}
+        {upcoming && <span className="ml-1.5 text-dim">→ {upcoming.title} at {upcoming.minLevel}</span>}
+      </p>
+
+      {badges.length > 0 && (
         <div className="relative z-10 mt-3 flex flex-wrap items-center justify-center gap-2">
-          {owned.map((item, i) => (
-            <motion.span
-              key={item.slug}
-              title={item.slug}
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 + i * 0.05, type: "spring", stiffness: 260, damping: 16 }}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/8 text-lg backdrop-blur"
-            >
-              {item.payload}
-            </motion.span>
-          ))}
+          {badges.map((item, i) => {
+            const rarity = item.rarity ? RARITY[item.rarity as Rarity] : null;
+            return (
+              <motion.span
+                key={item.slug}
+                title={`${item.slug}${item.equipped ? " (equipped)" : ""}`}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 + i * 0.05, type: "spring", stiffness: 260, damping: 16 }}
+                className="grid h-9 w-9 place-items-center rounded-xl border text-lg backdrop-blur"
+                style={{
+                  borderColor: item.equipped ? rarity?.ring ?? "rgba(255,255,255,.4)" : "rgba(255,255,255,.15)",
+                  background: item.equipped ? rarity?.glow ?? "rgba(255,255,255,.08)" : "rgba(255,255,255,.05)",
+                  boxShadow: item.equipped && rarity ? `0 0 16px -4px ${rarity.color}` : undefined,
+                }}
+              >
+                {item.payload}
+              </motion.span>
+            );
+          })}
         </div>
       )}
     </div>

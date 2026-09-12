@@ -26,7 +26,11 @@ import ChallengePanel, { Challenge } from "@/components/game/ChallengePanel";
 import ChestCeremony, { ChestReward } from "@/components/game/ChestCeremony";
 import EventFeed, { GameEvent } from "@/components/game/EventFeed";
 import FocusMode from "@/components/game/FocusMode";
+import SettingsPanel from "@/components/game/SettingsPanel";
+import { ShortcutHelp, useShortcuts } from "@/components/game/Shortcuts";
 import { useAudio } from "@/components/game/AudioProvider";
+import { useCursor } from "@/components/game/CursorLayer";
+import { useSettings } from "@/components/game/SettingsProvider";
 
 type PendingChest = { id: string; rarity: string; source: string; label: string; tint: string };
 
@@ -51,12 +55,29 @@ export default function Dashboard() {
   const [openingChest, setOpeningChest] = useState(false);
   const [chestReward, setChestReward] = useState<ChestReward | null>(null);
   const [chestOpen, setChestOpen] = useState<PendingChest | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const newQuestButtonRef = useRef<HTMLButtonElement>(null);
   const goldAnchor = useRef<HTMLDivElement>(null);
   const xpAnchor = useRef<HTMLDivElement>(null);
   const flightId = useRef(0);
   const { play } = useAudio();
+  const { burst } = useCursor();
+  const { settings } = useSettings();
+
+  useShortcuts({
+    newQuest: () => setModalOpen(true),
+    focus: () => setFocusOpen(true),
+    chest: () => {
+      if (chests.length) {
+        setChestReward(null);
+        setChestOpen(chests[0]);
+      }
+    },
+    settings: () => setSettingsOpen(true),
+    help: () => setHelpOpen((v) => !v),
+  });
 
   const pushEvents = useCallback((incoming: GameEvent[]) => {
     if (!incoming.length) return;
@@ -71,28 +92,51 @@ export default function Dashboard() {
     setTimeout(() => setReaction(null), ms);
   }, []);
 
+  /** One request for the whole dashboard. */
   const load = useCallback(async () => {
-    const [charRes, questRes] = await Promise.all([fetch("/api/character"), fetch("/api/quests")]);
-    if (charRes.status === 401 || questRes.status === 401) {
-      window.location.href = "/login?from=/app";
-      return;
-    }
-    setCharacter(await charRes.json());
-    setQuests((await questRes.json()).quests);
+    try {
+      const res = await fetch("/api/state");
+      if (res.status === 401) {
+        window.location.href = "/login?from=/app";
+        return;
+      }
+      if (!res.ok) {
+        setToast("Could not reach the realm");
+        return;
+      }
 
-    fetch("/api/companion").then((r) => r.ok && r.json()).then((d) => d && setCompanion(d.companion)).catch(() => {});
-    fetch("/api/challenges").then((r) => r.ok && r.json()).then((d) => d && setChallenges(d.challenges)).catch(() => {});
-    fetch("/api/chests").then((r) => r.ok && r.json()).then((d) => d && setChests(d.chests)).catch(() => {});
+      const d = await res.json();
+      if (!d?.user) {
+        setToast("Could not load your character");
+        return;
+      }
+
+      setCharacter({ user: d.user, attributes: d.attributes, owned: d.owned });
+      setQuests(d.quests ?? []);
+      setCompanion(d.companion ?? null);
+      setChallenges(d.challenges ?? []);
+      setChests(d.chests ?? []);
+    } catch {
+      setToast("Connection lost");
+    }
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  /** Refresh the derived panels after a cascade, without touching quest state. */
   const refreshSideState = useCallback(() => {
-    fetch("/api/challenges").then((r) => r.ok && r.json()).then((d) => d && setChallenges(d.challenges)).catch(() => {});
-    fetch("/api/chests").then((r) => r.ok && r.json()).then((d) => d && setChests(d.chests)).catch(() => {});
-    fetch("/api/companion").then((r) => r.ok && r.json()).then((d) => d && setCompanion(d.companion)).catch(() => {});
+    fetch("/api/state")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.user) return;
+        setChallenges(d.challenges ?? []);
+        setChests(d.chests ?? []);
+        setCompanion(d.companion ?? null);
+        setCharacter((prev) => (prev ? { ...prev, owned: d.owned ?? prev.owned } : prev));
+      })
+      .catch(() => {});
   }, []);
 
   async function createQuest(input: { title: string; attributeId: string; difficulty: Difficulty }) {
@@ -150,6 +194,12 @@ export default function Dashboard() {
 
       play("complete");
       setTimeout(() => play("coin"), 260);
+
+      // energy burst at the quest that was just completed
+      burst(
+        result.combo.multiplier >= 2 ? "gold" : "xp",
+        origin ? { x: origin.left + origin.width / 2, y: origin.top + origin.height / 2 } : undefined
+      );
 
       setCharacter((prev) =>
         prev
@@ -249,6 +299,10 @@ export default function Dashboard() {
       }
       play("purchase");
       setChestReward(data);
+      burst(data.item?.rarity === "LEGENDARY" ? "gold" : "violet", {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      });
       react(data.item?.rarity === "LEGENDARY" ? "STARSTRUCK" : "CELEBRATING", 3000);
       setCharacter((prev) =>
         prev ? { ...prev, user: { ...prev.user, gold: data.totalGold } } : prev
@@ -277,7 +331,7 @@ export default function Dashboard() {
 
   const active = quests?.filter((q) => !q.done) ?? [];
   const completed = quests?.filter((q) => q.done) ?? [];
-  const combo = character?.user.combo ?? { count: 0, multiplier: 1 };
+  const combo = character?.user?.combo ?? { count: 0, multiplier: 1 };
 
   return (
     <>
@@ -319,6 +373,16 @@ export default function Dashboard() {
               aria-label="Open focus mode"
             >
               <span aria-hidden="true">🧘</span>
+            </button>
+            <button
+              onClick={() => {
+                setSettingsOpen(true);
+                play("open");
+              }}
+              className="grid h-10 w-10 place-items-center rounded-xl border border-white/12 bg-white/[0.06] text-base backdrop-blur transition-colors hover:bg-white/[0.12]"
+              aria-label="Open settings"
+            >
+              <span aria-hidden="true">⚙️</span>
             </button>
             <AudioControls />
           </div>
@@ -364,7 +428,7 @@ export default function Dashboard() {
                     <Companion
                       state={companion}
                       reaction={reaction}
-                      chaos={false}
+                      chaos={settings.chaos !== "off"}
                       onInteract={interactCompanion}
                     />
                   </motion.div>
@@ -511,6 +575,9 @@ export default function Dashboard() {
           load();
         }}
       />
+
+      {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
+      {helpOpen && <ShortcutHelp onClose={() => setHelpOpen(false)} />}
 
       <EventFeed events={events} />
       <RewardFlight

@@ -47,6 +47,9 @@ export async function GET() {
       owned: user.inventory.map((row) => ({
         slug: row.item.slug,
         payload: row.item.payload,
+        rarity: row.item.rarity,
+        slot: row.item.slot,
+        equipped: row.equipped,
       })),
     });
   } catch (err) {
