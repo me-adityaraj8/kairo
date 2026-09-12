@@ -75,11 +75,11 @@ export default function Bag() {
       }
       setItems(data.items);
       if (!item.equipped) {
-        play("purchase");
+        play("equip");
         burst(item.rarity === "LEGENDARY" ? "gold" : "violet");
         setAnnounce(`${item.name} equipped.`);
       } else {
-        play("click");
+        play("unequip");
         setAnnounce(`${item.name} unequipped.`);
       }
     } catch {

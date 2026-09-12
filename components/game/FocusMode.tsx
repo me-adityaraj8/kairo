@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import GameButton from "./GameButton";
+import FocusSounds from "./FocusSounds";
+import { useAudio } from "./AudioProvider";
 import { SPRING } from "@/lib/motion";
 
 type ActiveSession = { id: string; minutes: number; startedAt: string };
@@ -26,7 +28,11 @@ export default function FocusMode({
   const [remaining, setRemaining] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [soundsOpen, setSoundsOpen] = useState(false);
   const claiming = useRef(false);
+  const { play, mix, resumeMix, stopAllAmbient } = useAudio();
+
+  const activeSounds = Object.values(mix).filter((m) => m?.on).length;
 
   // recover an in-flight session so a refresh does not lose it
   useEffect(() => {
@@ -50,6 +56,8 @@ export default function FocusMode({
         const data = await res.json();
         if (res.ok) {
           setSession(null);
+          play("focusEnd");
+          stopAllAmbient(); // soundscape fades out with the session
           onFinished(data);
         } else {
           setError(data.error ?? "Could not finish the session");
@@ -98,6 +106,8 @@ export default function FocusMode({
       const data = await res.json();
       if (res.ok) {
         setSession(data);
+        play("focusStart");
+        resumeMix(); // fade the player's soundscape back in
         onStarted();
       } else setError(data.error ?? "Could not start");
     } catch {
@@ -109,6 +119,7 @@ export default function FocusMode({
 
   async function abandon() {
     setSession(null);
+    stopAllAmbient();
     await fetch("/api/focus", { method: "DELETE" }).catch(() => {});
   }
 
@@ -217,6 +228,24 @@ export default function FocusMode({
               ? "Rewards are paid when the timer reaches zero."
               : `${minutes} minutes earns about ${Math.round(minutes * 2.5)} XP and ${Math.round(minutes * 0.8)} gold.`}
           </p>
+
+          {/* compact sound mixer, tucked away so it never crowds the timer */}
+          <div className="relative mt-5">
+            <FocusSounds open={soundsOpen} onClose={() => setSoundsOpen(false)} />
+            <button
+              onClick={() => setSoundsOpen((v) => !v)}
+              aria-expanded={soundsOpen}
+              className="mx-auto flex items-center gap-2 rounded-xl border border-white/12 bg-white/[0.05] px-4 py-2.5 text-xs font-semibold text-text backdrop-blur transition-colors hover:bg-white/[0.1]"
+            >
+              <span aria-hidden="true">🎧</span>
+              Focus sounds
+              {activeSounds > 0 && (
+                <span className="rounded-md bg-xp/20 px-1.5 py-0.5 text-[10px] font-bold text-xp">
+                  {activeSounds}
+                </span>
+              )}
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

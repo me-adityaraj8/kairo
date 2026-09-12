@@ -43,7 +43,7 @@ export default function AudioControls() {
         ref={buttonRef}
         onClick={() => {
           setOpen((v) => !v);
-          play("click");
+          play("toggle");
         }}
         aria-expanded={open}
         aria-label={muted ? "Audio settings (currently muted)" : "Audio settings"}
@@ -69,7 +69,7 @@ export default function AudioControls() {
               <button
                 onClick={() => {
                   update({ muted: !muted });
-                  if (muted) play("click");
+                  if (muted) play("toggle");
                 }}
                 aria-pressed={muted}
                 className={`rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors
@@ -80,10 +80,10 @@ export default function AudioControls() {
             </div>
 
             <Slider
-              label="Music"
-              value={settings.music}
+              label="Ambience"
+              value={settings.ambient}
               disabled={muted}
-              onChange={(v) => update({ music: v })}
+              onChange={(v) => update({ ambient: v })}
             />
             <Slider
               label="Effects"

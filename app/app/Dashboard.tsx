@@ -192,7 +192,7 @@ export default function Dashboard() {
 
       if (origin) launchFlight(origin, result.xpGained, result.goldGained);
 
-      play("complete");
+      play("questComplete");
       setTimeout(() => play("coin"), 260);
 
       // energy burst at the quest that was just completed
@@ -229,12 +229,12 @@ export default function Dashboard() {
 
       if (result.combo.multiplier >= 2) {
         react("EXCITED");
-        play("streak");
+        play("combo");
       } else {
         react("HAPPY", 1800);
       }
 
-      if (result.events.some((e) => e.type === "ACHIEVEMENT")) play("purchase");
+      if (result.events.some((e) => e.type === "ACHIEVEMENT")) play("achievement");
       if (result.events.some((e) => e.type === "COMPANION_EVOLVED")) react("STARSTRUCK", 3000);
 
       setAnnouncement(
@@ -297,7 +297,7 @@ export default function Dashboard() {
         setChestOpen(null);
         return;
       }
-      play("purchase");
+      play("reveal");
       setChestReward(data);
       burst(data.item?.rarity === "LEGENDARY" ? "gold" : "violet", {
         x: window.innerWidth / 2,
@@ -319,7 +319,7 @@ export default function Dashboard() {
   }
 
   async function interactCompanion() {
-    play("click");
+    play("toggle");
     react("HAPPY", 1600);
     const res = await fetch("/api/companion", {
       method: "PATCH",
@@ -353,7 +353,7 @@ export default function Dashboard() {
                 onClick={() => {
                   setChestReward(null);
                   setChestOpen(chests[0]);
-                  play("click");
+                  play("chestOpen");
                 }}
                 className="relative grid h-10 w-10 place-items-center rounded-xl border border-gold/40 bg-gold/12 text-base backdrop-blur transition-colors hover:bg-gold/20"
                 aria-label={`${chests.length} unopened chest${chests.length > 1 ? "s" : ""}`}

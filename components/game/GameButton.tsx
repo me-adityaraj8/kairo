@@ -3,6 +3,7 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { SPRING } from "@/lib/motion";
+import type { Sfx } from "@/lib/audio";
 import { useAudio } from "./AudioProvider";
 
 type Variant = "primary" | "ghost" | "danger" | "gold";
@@ -18,10 +19,12 @@ const variants: Record<Variant, string> = {
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
   size?: "sm" | "md";
+  /** Override the press sound so buttons don't all sound alike. */
+  sound?: Sfx | "none";
 };
 
 const GameButton = forwardRef<HTMLButtonElement, Props>(function GameButton(
-  { variant = "primary", size = "md", className = "", children, disabled, onClick, onPointerEnter, ...props },
+  { variant = "primary", size = "md", sound = "click", className = "", children, disabled, onClick, onPointerEnter, ...props },
   ref
 ) {
   const reduceMotion = useReducedMotion();
@@ -33,7 +36,7 @@ const GameButton = forwardRef<HTMLButtonElement, Props>(function GameButton(
       ref={ref}
       disabled={disabled}
       onClick={(e) => {
-        if (!disabled) play("click");
+        if (!disabled && sound !== "none") play(sound);
         onClick?.(e as React.MouseEvent<HTMLButtonElement>);
       }}
       onPointerEnter={(e) => {

@@ -42,6 +42,7 @@ export class CursorField {
   private sprites = new Map<number, HTMLCanvasElement>();
   private hueList: number[] = [];
   private particles: Particle[] = [];
+  private rings: { x: number; y: number; r: number; life: number; hue: number }[] = [];
   private raf = 0;
   private running = false;
 
@@ -98,10 +99,11 @@ export class CursorField {
     this.pressed = v;
   }
 
-  /** Reward burst. `tone` picks the colour family. */
+  /** Reward burst with a shockwave ring. `tone` picks the colour family. */
   burst(x: number, y: number, tone: keyof typeof HUES = "gold", count = 26) {
     if (this.quality === "off") return;
     const n = this.quality === "low" ? Math.round(count / 2) : count;
+
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
       const sp = 2.2 + Math.random() * 4.5;
@@ -116,6 +118,21 @@ export class CursorField {
         hue: HUES[tone] + (Math.random() * 24 - 12),
         kind: "spark",
       });
+    }
+
+    this.rings.push({ x, y, r: 6, life: 1, hue: HUES[tone] });
+
+    // nearby ambient motes get shoved outwards by the blast
+    for (const p of this.particles) {
+      if (p.kind !== "ambient") continue;
+      const dx = p.x - x;
+      const dy = p.y - y;
+      const d = Math.hypot(dx, dy);
+      if (d < 260 && d > 0.5) {
+        const push = (1 - d / 260) * 9;
+        p.vx += (dx / d) * push;
+        p.vy += (dy / d) * push;
+      }
     }
   }
 
@@ -217,6 +234,23 @@ export class CursorField {
 
     ctx.globalCompositeOperation = "lighter";
 
+    // expanding shockwave rings from reward bursts
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const ring = this.rings[i];
+      ring.r += 9;
+      ring.life -= 0.03;
+      if (ring.life <= 0) {
+        this.rings.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = ring.life * 0.5;
+      ctx.strokeStyle = `hsla(${ring.hue},100%,68%,1)`;
+      ctx.lineWidth = 2.5 * ring.life;
+      ctx.beginPath();
+      ctx.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
 
@@ -291,6 +325,7 @@ export class CursorField {
 
   stop() {
     this.running = false;
+    this.rings = [];
     cancelAnimationFrame(this.raf);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
@@ -298,6 +333,7 @@ export class CursorField {
   destroy() {
     this.stop();
     this.particles = [];
+    this.rings = [];
     this.sprites.clear();
   }
 }

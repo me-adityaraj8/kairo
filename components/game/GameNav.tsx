@@ -95,7 +95,7 @@ function NavItem({
   return (
     <Link
       href={href}
-      onClick={() => play("click")}
+      onClick={() => play("navigate")}
       onPointerEnter={() => play("hover")}
       aria-current={active ? "page" : undefined}
       className={`relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 transition-colors

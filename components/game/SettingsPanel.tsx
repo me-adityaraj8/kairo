@@ -98,10 +98,10 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             onChange={(v) => updateAudio({ muted: !v })}
           />
           <Range
-            label="Music"
-            value={audio.music}
+            label="Focus ambience"
+            value={audio.ambient}
             disabled={audio.muted}
-            onChange={(v) => updateAudio({ music: v })}
+            onChange={(v) => updateAudio({ ambient: v })}
           />
           <Range
             label="Effects"
