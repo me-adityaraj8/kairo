@@ -499,15 +499,17 @@ export default function Creature({
         style={{ transformBox: "fill-box", transformOrigin: "center" }}
       />
 
-      {/* contact shadow, tied to the bob so it reads as weight */}
+      {/* Contact shadow, tied to the bob so the hop reads as weight. Scaled
+          rather than animated on rx, which is not an animatable attribute. */}
       <motion.ellipse
         cx={50}
         cy={94}
         rx={22}
         ry={4}
         fill="rgba(0,0,0,.45)"
-        animate={still ? undefined : { rx: [22, 19, 22], opacity: [0.45, 0.3, 0.45] }}
+        animate={still ? undefined : { scaleX: [1, 0.86, 1], opacity: [0.45, 0.3, 0.45] }}
         transition={loop}
+        style={{ transformBox: "fill-box", transformOrigin: "center" }}
       />
 
       <motion.g

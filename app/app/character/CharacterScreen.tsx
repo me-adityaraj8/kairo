@@ -14,6 +14,7 @@ import ActivityCalendar from "@/components/game/ActivityCalendar";
 import { RARITY, Rarity } from "@/lib/rarity";
 import { TIERS, nextTier, tierFor } from "@/lib/evolution";
 import { STAGES } from "@/lib/companion";
+import Creature from "@/components/game/Creature";
 import { STREAK_CHESTS } from "@/lib/chests";
 import { riseIn, stagger } from "@/lib/motion";
 
@@ -25,7 +26,7 @@ type Stats = {
     focusMinutes: number; chestsOpened: number; joinedAt: string;
   };
   attributes: { id: string; name: string; level: number; xp: number; xpToNext: number }[];
-  companion: { name: string; stage: string; stageTitle: string; face: string; tint: string; bond: number; personality: string } | null;
+  companion: { name: string; species: string; stage: string; stageTitle: string; face: string; tint: string; bond: number; personality: string } | null;
   owned: { slug: string; name: string; payload: string; rarity: string; slot: string; equipped: boolean }[];
   activity: ActivityDay[];
   questsByDifficulty: Record<string, number>;
@@ -218,7 +219,7 @@ export default function CharacterScreen() {
               <motion.section variants={riseIn} className="panel p-4">
                 <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-dim">Companion</h2>
                 <div className="flex items-center gap-4">
-                  <span className="text-5xl">{stats.companion.face}</span>
+                  <Creature species={stats.companion.species} size={64} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-text">{stats.companion.name}</p>
                     <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: stats.companion.tint }}>

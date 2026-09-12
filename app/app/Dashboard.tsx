@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Character, CompleteResult, Difficulty, Quest } from "@/lib/types";
 import { riseIn, stagger } from "@/lib/motion";
 import { ServerEvent, feedItem, toFeed } from "@/lib/cascade";
-import { Mood } from "@/lib/companion";
+import { Mood, CompanionState } from "@/lib/companion";
 import Ambient from "@/components/game/Ambient";
 import GameNav from "@/components/game/GameNav";
 import CharacterStage from "@/components/game/CharacterStage";
@@ -20,7 +20,6 @@ import Toast from "@/components/game/Toast";
 import Shimmer from "@/components/game/Shimmer";
 import WorldBackground from "@/components/game/WorldBackground";
 import AudioControls from "@/components/game/AudioControls";
-import Companion, { CompanionState } from "@/components/game/Companion";
 import ComboMeter from "@/components/game/ComboMeter";
 import ChallengePanel, { Challenge } from "@/components/game/ChallengePanel";
 import ChestCeremony, { ChestReward } from "@/components/game/ChestCeremony";
@@ -30,7 +29,6 @@ import SettingsPanel from "@/components/game/SettingsPanel";
 import { ShortcutHelp, useShortcuts } from "@/components/game/Shortcuts";
 import { useAudio } from "@/components/game/AudioProvider";
 import { useCursor } from "@/components/game/CursorLayer";
-import { useSettings } from "@/components/game/SettingsProvider";
 
 type PendingChest = { id: string; rarity: string; source: string; label: string; tint: string };
 
@@ -64,7 +62,6 @@ export default function Dashboard() {
   const flightId = useRef(0);
   const { play } = useAudio();
   const { burst } = useCursor();
-  const { settings } = useSettings();
 
   useShortcuts({
     newQuest: () => setModalOpen(true),
@@ -424,17 +421,6 @@ export default function Dashboard() {
                     />
                   </div>
                 </motion.div>
-
-                {companion && (
-                  <motion.div variants={riseIn} className="panel p-4">
-                    <Companion
-                      state={companion}
-                      reaction={reaction}
-                      chaos={settings.chaos !== "off"}
-                      onInteract={interactCompanion}
-                    />
-                  </motion.div>
-                )}
 
                 <motion.div variants={riseIn}>
                   <h2 className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.18em] text-dim">

@@ -117,3 +117,17 @@ export function moodFrom(opts: {
   if (hours < 0.1) return "HAPPY";
   return "IDLE";
 }
+
+/** Shape the API hands the client for the player's companion. */
+export type CompanionState = {
+  name: string;
+  species: string;
+  personality: string;
+  stage: string;
+  stageTitle: string;
+  face: string;
+  tint: string;
+  bond: number;
+  nextStage: { stage: string; title: string; bond: number } | null;
+  mood: Mood;
+};
