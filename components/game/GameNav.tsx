@@ -1,22 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useAudio } from "./AudioProvider";
 
 const LINKS = [
   { href: "/app", label: "Quests", icon: "⚔️" },
-  { href: "/app/character", label: "Hero", icon: "🧝" },
+  { href: "/app/character", label: "Legend", icon: "🧭" },
   { href: "/app/bag", label: "Bag", icon: "🎒" },
   { href: "/app/achievements", label: "Deeds", icon: "🏆" },
   { href: "/app/shop", label: "Shop", icon: "🏺" },
 ];
 
-export default function GameNav() {
+export default function GameNav({ onFocus }: { onFocus?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const reduceMotion = useReducedMotion();
+  const { play } = useAudio();
+
+  // Focus lives in the nav now. Off the dashboard it routes there and opens.
+  const focus = () => {
+    play("open");
+    if (onFocus) onFocus();
+    else router.push("/app?focus=1");
+  };
 
   return (
     <>
@@ -35,6 +44,9 @@ export default function GameNav() {
             stacked
           />
         ))}
+
+        <ActionItem icon="🧘" label="Focus" onClick={focus} stacked />
+
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="mt-auto flex w-14 flex-col items-center gap-1 rounded-xl py-2 text-dim transition-colors hover:bg-white/8 hover:text-text"
@@ -52,7 +64,7 @@ export default function GameNav() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-deep/85 backdrop-blur-xl lg:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto flex max-w-md items-stretch justify-around px-2 py-1.5">
+        <div className="no-scrollbar mx-auto flex max-w-xl items-stretch justify-between gap-0.5 overflow-x-auto px-1.5 py-1.5">
           {LINKS.map((link) => (
             <NavItem
               key={link.href}
@@ -61,9 +73,12 @@ export default function GameNav() {
               reduceMotion={!!reduceMotion}
             />
           ))}
+
+          <ActionItem icon="🧘" label="Focus" onClick={focus} />
+
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex min-w-[64px] flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-dim transition-colors hover:text-text"
+            className="flex min-w-[52px] shrink-0 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-dim transition-colors hover:text-text"
           >
             <span aria-hidden="true" className="text-lg">
               ⏻
@@ -73,6 +88,31 @@ export default function GameNav() {
         </div>
       </nav>
     </>
+  );
+}
+
+function ActionItem({
+  icon,
+  label,
+  onClick,
+  stacked,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+  stacked?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex shrink-0 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-dim transition-colors hover:text-text
+        ${stacked ? "w-14 py-2" : "min-w-[52px]"}`}
+    >
+      <span aria-hidden="true" className="text-lg">
+        {icon}
+      </span>
+      <span className="text-[10px] font-semibold">{label}</span>
+    </button>
   );
 }
 
@@ -99,8 +139,8 @@ function NavItem({
       onClick={() => play("navigate")}
       onPointerEnter={() => play("hover")}
       aria-current={active ? "page" : undefined}
-      className={`relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 transition-colors
-        ${stacked ? "w-14 py-2" : "min-w-[64px]"} ${active ? "text-gold" : "text-dim hover:text-text"}`}
+      className={`relative flex shrink-0 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition-colors
+        ${stacked ? "w-14 py-2" : "min-w-[52px]"} ${active ? "text-gold" : "text-dim hover:text-text"}`}
     >
       {active && (
         <motion.span

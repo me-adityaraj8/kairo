@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import RegisterForm from "./RegisterForm";
+import { oauthEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Create Your Adventurer",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return <RegisterForm oauth={oauthEnabled} />;
 }

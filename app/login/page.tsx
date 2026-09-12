@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import LoginForm from "./LoginForm";
+import { oauthEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <Suspense>
-      <LoginForm />
+      <LoginForm oauth={oauthEnabled} />
     </Suspense>
   );
 }

@@ -8,6 +8,27 @@ import type { ActivityDay } from "./Heatmap";
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DOW = ["S", "M", "T", "W", "T", "F", "S"];
 
+const NavBtn = ({
+  label,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    aria-label={label}
+    className="rounded-lg px-2 py-1 text-dim transition-colors hover:bg-white/10 hover:text-text disabled:opacity-25 disabled:hover:bg-transparent"
+  >
+    {children}
+  </button>
+);
+
 export default function ActivityCalendar({
   activity,
   today,
@@ -58,25 +79,35 @@ export default function ActivityCalendar({
 
   return (
     <div className="panel p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex items-center justify-between gap-1">
+        <div className="flex items-center gap-0.5">
+          <NavBtn label="Previous year" onClick={() => setOffset((o) => o - 12)}>
+            «
+          </NavBtn>
+          <NavBtn label="Previous month" onClick={() => setOffset((o) => o - 1)}>
+            ‹
+          </NavBtn>
+        </div>
+
         <button
-          onClick={() => setOffset((o) => o - 1)}
-          aria-label="Previous month"
-          className="rounded-lg px-2 py-1 text-dim transition-colors hover:bg-white/10 hover:text-text"
+          onClick={() => setOffset(0)}
+          className="min-w-0 rounded-lg px-2 py-1 text-center transition-colors hover:bg-white/10"
+          title="Jump to this month"
         >
-          ‹
+          <span className="block truncate text-[12px] font-bold text-text">
+            {MONTHS[view.getUTCMonth()]} {view.getUTCFullYear()}
+          </span>
+          {offset !== 0 && <span className="block text-[9px] text-dim">tap for today</span>}
         </button>
-        <h2 className="text-[12px] font-bold text-text">
-          {MONTHS[view.getUTCMonth()]} {view.getUTCFullYear()}
-        </h2>
-        <button
-          onClick={() => setOffset((o) => Math.min(0, o + 1))}
-          disabled={offset >= 0}
-          aria-label="Next month"
-          className="rounded-lg px-2 py-1 text-dim transition-colors hover:bg-white/10 hover:text-text disabled:opacity-30"
-        >
-          ›
-        </button>
+
+        <div className="flex items-center gap-0.5">
+          <NavBtn label="Next month" onClick={() => setOffset((o) => Math.min(0, o + 1))} disabled={offset >= 0}>
+            ›
+          </NavBtn>
+          <NavBtn label="Next year" onClick={() => setOffset((o) => Math.min(0, o + 12))} disabled={offset >= -11}>
+            »
+          </NavBtn>
+        </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center">

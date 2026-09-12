@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import GameButton from "@/components/game/GameButton";
 import GameInput from "@/components/game/GameInput";
+import OAuthButtons from "@/components/game/OAuthButtons";
 import { SPRING } from "@/lib/motion";
 import { attributeIcon } from "@/lib/rarity";
 
@@ -14,7 +15,7 @@ type FieldErrors = { email?: string; password?: string; displayName?: string };
 
 const STARTERS = ["Intellect", "Strength", "Discipline", "Vitality"];
 
-export default function RegisterForm() {
+export default function RegisterForm({ oauth }: { oauth: { google: boolean; github: boolean } }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -126,6 +127,7 @@ export default function RegisterForm() {
               {pending ? "Rolling…" : "Begin"}
             </GameButton>
           </form>
+          <OAuthButtons enabled={oauth} callbackUrl="/app" />
         </div>
 
         <p className="mt-5 text-center text-sm text-dim">

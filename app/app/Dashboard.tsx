@@ -125,6 +125,14 @@ export default function Dashboard() {
     load();
   }, [load]);
 
+  // arriving from the nav on another page: ?focus=1 opens the timer
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("focus") === "1") {
+      setFocusOpen(true);
+      window.history.replaceState({}, "", "/app");
+    }
+  }, []);
+
   /** Refresh the derived panels after a cascade, without touching quest state. */
   const refreshSideState = useCallback(() => {
     fetch("/api/state")
@@ -337,7 +345,7 @@ export default function Dashboard() {
     <>
       <WorldBackground />
       <Ambient />
-      <GameNav />
+      <GameNav onFocus={() => setFocusOpen(true)} />
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:pb-10 lg:pl-28">
         <div aria-live="polite" className="sr-only">
@@ -364,16 +372,6 @@ export default function Dashboard() {
                 </span>
               </button>
             )}
-            <button
-              onClick={() => {
-                setFocusOpen(true);
-                play("open");
-              }}
-              className="grid h-10 w-10 place-items-center rounded-xl border border-white/12 bg-white/[0.06] text-base backdrop-blur transition-colors hover:bg-white/[0.12]"
-              aria-label="Open focus mode"
-            >
-              <span aria-hidden="true">🧘</span>
-            </button>
             <button
               onClick={() => {
                 setSettingsOpen(true);

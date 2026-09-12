@@ -7,9 +7,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import GameButton from "@/components/game/GameButton";
 import GameInput from "@/components/game/GameInput";
+import OAuthButtons from "@/components/game/OAuthButtons";
 import { SPRING } from "@/lib/motion";
 
-export default function LoginForm() {
+export default function LoginForm({ oauth }: { oauth: { google: boolean; github: boolean } }) {
   const router = useRouter();
   const params = useSearchParams();
   const returnTo = params.get("from") || "/app";
@@ -78,6 +79,7 @@ export default function LoginForm() {
               {pending ? "Entering…" : "Continue"}
             </GameButton>
           </form>
+          <OAuthButtons enabled={oauth} callbackUrl={returnTo} />
         </div>
 
         <p className="mt-5 text-center text-sm text-dim">
