@@ -494,25 +494,6 @@ Type checking (`tsc --noEmit`) and linting run clean.
 
 ---
 
-## Hackathon impact
-
-- **Interlocking, not additive** — the value is in the chain reaction. One completion moves eight systems at once rather than incrementing a single counter.
-- **Trustworthy rewards** — every number is server-computed and the completion endpoint takes no body, so progress cannot be forged from the browser.
-- **Zero asset weight** — audio and visual effects are generated at runtime, which keeps the landing page static and fast while still feeling like a game.
-- **Accessible by construction** — full keyboard path, reduced-motion mode and screen-reader announcements for rewards, not retrofitted.
-
-## Future scope
-
-World map progression · journal and story entries · seasonal events · shareable player cards · onboarding tutorial · companion cosmetics and skins · weekly challenges · quest subtasks and deadlines.
-
----
-
-## Team
-
-**Aditya Raj** — [@me-adityaraj8](https://github.com/me-adityaraj8)
-
-Built for Tech Zephyr 4.0, IIT Bhubaneswar.
-
 ## License
 
 [MIT](LICENSE)
