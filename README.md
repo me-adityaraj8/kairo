@@ -60,9 +60,9 @@ Every value in that chain is stored in Postgres and calculated on the server. Th
 | **Companion** | Five evolution stages driven by bond earned from real activity. Five personalities with distinct voice lines, plus mood and reaction states. |
 | **Character evolution** | Five level tiers — Novice, Adventurer (10), Veteran (25), Elite (50), Legendary (100) — each changing the character's colour, aura and orbiting particles. |
 | **Focus mode** | 15/25/45-minute sessions. Elapsed time is verified server-side. Rewards scale with minutes focused. |
-| **Focus sounds** | Ten layerable ambiences (rain, fireplace, forest, waterfall, ocean, wind, thunder, cafe, night, birds) with per-layer volume, generated in-browser. Mix is persisted. |
+| **Focus sounds** | Ten layerable ambiences (rain, fireplace, forest, waterfall, ocean, wind, thunder, cafe, night, birds) with per-layer volume. Recordings, level-matched and cross-faded into seamless loops. Mix is persisted. |
 | **Stats & history** | Record screen with totals, attribute progress, completions by rarity, streak milestones, a 26-week activity heatmap and a month/year calendar. |
-| **Audio** | 24 distinct sound effects synthesised with the Web Audio API. No audio files are shipped, and there is no background music. |
+| **Audio** | 24 distinct sound effects synthesised with the Web Audio API, on a separate bus from the focus soundscapes. No background music. |
 | **Interactive environment** | Canvas particle field reacting to the pointer — lagging glow with inertia, motion trail, ambient motes pushed aside by the cursor, and reward bursts with shockwave rings. Parallax background layers. |
 | **Accessibility** | Keyboard shortcuts, focus-trapped modals, `aria-live` announcements, `role="progressbar"` on every bar, and a reduced-motion mode. |
 | **Themes** | Dark and light, each with its own designed palette rather than an inversion. |
@@ -306,12 +306,14 @@ Because there is no adapter, an OAuth provider returns *its own* user id rather 
 | Auth | NextAuth 4.24 — Credentials, Google, GitHub (JWT sessions) |
 | Styling | Tailwind CSS 3.4, CSS custom properties for theming |
 | Animation | Framer Motion 13, Canvas 2D for the particle field |
-| Audio | Web Audio API — all sound synthesised at runtime |
+| Audio | Web Audio API — synthesised SFX, recorded focus soundscapes |
 | Validation | Zod 4 |
 | Hashing | bcryptjs |
 | Hosting | Vercel |
 
-**No audio, image or icon assets are shipped.** Sound is generated with oscillators and filtered noise; the particle field is drawn to a single canvas using a pre-rendered glow sprite with additive blending.
+**No image or icon assets are shipped.** Every sound effect is generated at runtime from oscillators and filtered noise, and the particle field is drawn to a single canvas using a pre-rendered glow sprite with additive blending.
+
+The ten focus soundscapes are recordings, in `public/ambient` (9.6 MB total). They are mastered to a common level and fetched only when a soundscape is first switched on. Each one has a synthesised equivalent that plays if its file is missing or fails to decode.
 
 ---
 
@@ -415,9 +417,10 @@ kairo/
 │   ├── challenges.ts            # daily pool
 │   ├── chests.ts  rarity.ts     # rarity and reward tables
 │   ├── companion.ts  evolution.ts
-│   ├── audio.ts  ambient.ts     # synthesised SFX and soundscapes
+│   ├── audio.ts  ambient.ts     # SFX bus, soundscape mixer
 │   ├── cursorField.ts           # canvas particle engine
 │   └── auth.ts  prisma.ts  session.ts
+├── public/ambient/              # 10 focus soundscape loops
 └── prisma/
     ├── schema.prisma            # 11 models
     ├── seed.ts                  # shop items

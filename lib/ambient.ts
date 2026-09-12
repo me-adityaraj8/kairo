@@ -71,6 +71,8 @@ class AmbientMixer {
   private layers = new Map<AmbientId, Layer>();
   private levels = new Map<AmbientId, number>();
   private noiseCache = new Map<NoiseColor, AudioBuffer>();
+  private buffers = new Map<AmbientId, AudioBuffer>();
+  private loading = new Map<AmbientId, Promise<AudioBuffer | null>>();
 
   get active(): AmbientId[] {
     return Array.from(this.layers.keys());
@@ -327,9 +329,7 @@ class AmbientMixer {
 
   // ------------------------------------------------------------ soundscapes
 
-  private build(id: AmbientId, out: GainNode): Layer {
-    const layer: Layer = { gain: out, nodes: [], cancels: [], stopped: false };
-
+  private buildSynth(id: AmbientId, out: AudioNode, layer: Layer) {
     const attach = (bed: ReturnType<typeof this.bed>) => {
       if (!bed) return null;
       bed.out.connect(out);
@@ -602,8 +602,115 @@ class AmbientMixer {
         break;
       }
     }
+  }
 
-    return layer;
+  // ------------------------------------------------------------- recordings
+
+  /**
+   * Fetch and decode a recording, once per session. Loading is deferred to
+   * the first time a soundscape is switched on — pulling all ten on mount
+   * would cost several megabytes nobody asked for.
+   */
+  private load(id: AmbientId): Promise<AudioBuffer | null> {
+    const cached = this.buffers.get(id);
+    if (cached) return Promise.resolve(cached);
+
+    const inFlight = this.loading.get(id);
+    if (inFlight) return inFlight;
+
+    const ctx = this.ctx();
+    if (!ctx) return Promise.resolve(null);
+
+    const task = (async () => {
+      try {
+        const res = await fetch(`/ambient/${id}.mp3`);
+        if (!res.ok) return null;
+        const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
+        this.buffers.set(id, buffer);
+        return buffer;
+      } catch {
+        // Missing or undecodable: the caller falls back to synthesis.
+        return null;
+      } finally {
+        this.loading.delete(id);
+      }
+    })();
+
+    this.loading.set(id, task);
+    return task;
+  }
+
+  /**
+   * Loop a recording by overlapping successive plays and cross-fading the
+   * join. The files are trimmed to start and end at matching levels, but no
+   * recording joins perfectly to itself; fading across a few seconds hides
+   * the splice that `loop = true` would leave exposed.
+   *
+   * Curves are equal-power, so the overlap doesn't dip in the middle the way
+   * a linear fade between two uncorrelated signals does.
+   */
+  private loopFile(buffer: AudioBuffer, out: AudioNode, layer: Layer) {
+    const ctx = this.ctx();
+    if (!ctx) return;
+
+    const xf = Math.min(4, buffer.duration * 0.12);
+    const period = buffer.duration - xf;
+
+    /*
+     * The recordings are mastered to a common level, which leaves ten of them
+     * at full slider summing above full scale. Trimming here keeps the bus
+     * limiter shaping peaks rather than hauling the whole mix down, and keeps
+     * a recording level with the synthesised version it stands in for.
+     */
+    const trim = ctx.createGain();
+    trim.gain.value = 0.8;
+    trim.connect(out);
+
+    const steps = 64;
+    const fadeIn = new Float32Array(steps);
+    const fadeOut = new Float32Array(steps);
+    for (let i = 0; i < steps; i++) {
+      const a = (i / (steps - 1)) * Math.PI * 0.5;
+      fadeIn[i] = Math.sin(a);
+      fadeOut[i] = Math.cos(a);
+    }
+
+    let next = ctx.currentTime + 0.06;
+    let first = true;
+    let handle: ReturnType<typeof setTimeout> | undefined;
+
+    const spawn = (at: number, fade: boolean) => {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+
+      const g = ctx.createGain();
+      if (fade) {
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.setValueCurveAtTime(fadeIn, at, xf);
+      } else {
+        g.gain.setValueAtTime(1, at);
+      }
+      g.gain.setValueCurveAtTime(fadeOut, at + buffer.duration - xf, xf);
+
+      src.connect(g);
+      g.connect(trim);
+      src.start(at);
+      src.stop(at + buffer.duration + 0.05);
+      layer.nodes.push(src);
+    };
+
+    const tick = () => {
+      if (layer.stopped) return;
+      while (next < ctx.currentTime + 8) {
+        spawn(next, !first);
+        first = false;
+        next += period;
+      }
+      handle = setTimeout(tick, 2000);
+    };
+
+    tick();
+    layer.cancels.push(() => clearTimeout(handle));
   }
 
   // ---------------------------------------------------------------- control
@@ -616,13 +723,27 @@ class AmbientMixer {
 
     const out = ctx.createGain();
     out.gain.value = 0.0001;
+
+    // Clears rumble below hearing that would otherwise just eat headroom.
+    const rumble = ctx.createBiquadFilter();
+    rumble.type = "highpass";
+    rumble.frequency.value = 30;
+    rumble.connect(out);
     out.connect(dest);
 
-    const layer = this.build(id, out);
+    const layer: Layer = { gain: out, nodes: [], cancels: [], stopped: false };
     this.layers.set(id, layer);
     this.levels.set(id, level);
 
     out.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), ctx.currentTime + FADE);
+
+    // A recording if there is one, otherwise the synthesised equivalent, so
+    // a soundscape without a file — or one that fails to load — still plays.
+    void this.load(id).then((buffer) => {
+      if (layer.stopped) return;
+      if (buffer) this.loopFile(buffer, rumble, layer);
+      else this.buildSynth(id, rumble, layer);
+    });
   }
 
   /** Stop with a fade out, then tear the graph down. */
