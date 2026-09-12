@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { RARITY, rarityForCost } from "@/lib/rarity";
+import { RARITY, Rarity, rarityForCost } from "@/lib/rarity";
 import { burst } from "@/lib/motion";
 import GameButton from "./GameButton";
 
@@ -12,6 +12,8 @@ export type ShopEntry = {
   cost: number;
   payload: string;
   owned: boolean;
+  rarity?: string;
+  slot?: string;
 };
 
 const FLAVOUR: Record<string, string> = {
@@ -43,7 +45,8 @@ export default function ShopItem({
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [coins, setCoins] = useState(false);
 
-  const rarity = RARITY[rarityForCost(item.cost)];
+  // stored rarity is authoritative; cost is only a fallback for older rows
+  const rarity = RARITY[(item.rarity as Rarity) ?? rarityForCost(item.cost)] ?? RARITY.COMMON;
 
   function onPointerMove(e: React.PointerEvent) {
     if (reduceMotion) return;

@@ -24,6 +24,8 @@ export async function GET() {
         name: item.name,
         cost: item.cost,
         payload: item.payload,
+        rarity: item.rarity,
+        slot: item.slot,
         owned: ownedIds.has(item.id),
       })),
     });
