@@ -1,4 +1,4 @@
-# Life RPG
+# Kairo
 
 Turn your real-world tasks into quests. Complete them, earn XP and gold, level up your character and attributes, and keep a daily streak going. Built for Tech Zephyr 4.0.
 

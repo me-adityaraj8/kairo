@@ -124,7 +124,7 @@ export default function Dashboard() {
       </div>
 
       <header className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="font-pixel text-sm text-gold sm:text-base">Life RPG</h1>
+        <h1 className="font-pixel text-sm text-gold sm:text-base">Kairo</h1>
         <nav className="flex items-center gap-3">
           <Link href="/app/shop" className="font-pixel text-[10px] text-muted underline hover:text-text">
             Tavern Shop

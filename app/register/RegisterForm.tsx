@@ -54,7 +54,7 @@ export default function RegisterForm() {
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center font-pixel text-base text-gold">Life RPG</h1>
+        <h1 className="mb-6 text-center font-pixel text-base text-gold">Kairo</h1>
         <PixelPanel title="Roll a New Character">
           <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
             <PixelInput

@@ -21,8 +21,8 @@ const monoFont = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    template: "%s · Life RPG",
-    default: "Life RPG",
+    template: "%s · Kairo",
+    default: "Kairo",
   },
   description: "Turn your real-world tasks into quests. Earn XP, level up, keep your streak alive.",
 };

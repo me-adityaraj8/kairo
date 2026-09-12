@@ -3,20 +3,20 @@ import Link from "next/link";
 import PixelPanel from "@/components/PixelPanel";
 
 export const metadata: Metadata = {
-  title: "Life RPG - Turn Your To-Do List Into a Quest Log",
+  title: "Kairo - Turn Your To-Do List Into a Quest Log",
   description:
-    "Life RPG turns everyday tasks into quests that award XP and gold. Level up four attributes, hold a daily streak, and spend your earnings in the tavern shop.",
+    "Kairo turns everyday tasks into quests that award XP and gold. Level up four attributes, hold a daily streak, and spend your earnings in the tavern shop.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Life RPG - Turn Your To-Do List Into a Quest Log",
+    title: "Kairo - Turn Your To-Do List Into a Quest Log",
     description:
       "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a 16-bit dungeon crawler.",
     type: "website",
-    siteName: "Life RPG",
+    siteName: "Kairo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Life RPG - Turn Your To-Do List Into a Quest Log",
+    title: "Kairo - Turn Your To-Do List Into a Quest Log",
     description:
       "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a 16-bit dungeon crawler.",
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Life RPG",
+  name: "Kairo",
   applicationCategory: "ProductivityApplication",
   operatingSystem: "Any",
   description:
@@ -58,7 +58,7 @@ export default function LandingPage() {
 
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-20">
         <header className="mb-16 text-center">
-          <h1 className="font-pixel text-xl leading-relaxed text-gold sm:text-3xl">Life RPG</h1>
+          <h1 className="font-pixel text-xl leading-relaxed text-gold sm:text-3xl">Kairo</h1>
           <p className="mx-auto mt-6 max-w-xl font-mono text-sm leading-relaxed text-text sm:text-base">
             Your to-do list already decides how your day goes. This one keeps score.
             Finish real tasks, earn XP and gold, and watch a character sheet fill in
