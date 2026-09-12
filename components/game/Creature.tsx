@@ -1,9 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useReducedMotion, useSpring, type MotionValue } from "framer-motion";
 import type { Mood } from "@/lib/companion";
 import { speciesOf, type Palette, type SpeciesId } from "@/lib/characters";
+
+/**
+ * One pointer listener for the whole app, however many creatures are on
+ * screen. Each one subscribes and works out its own gaze from the shared
+ * coordinates rather than attaching a listener of its own.
+ */
+const watchers = new Set<(x: number, y: number) => void>();
+let listening = false;
+
+function handleMove(e: PointerEvent) {
+  watchers.forEach((w) => w(e.clientX, e.clientY));
+}
+
+function watchPointer(fn: (x: number, y: number) => void) {
+  watchers.add(fn);
+  if (!listening && typeof window !== "undefined") {
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    listening = true;
+  }
+  return () => {
+    watchers.delete(fn);
+    if (watchers.size === 0 && listening) {
+      window.removeEventListener("pointermove", handleMove);
+      listening = false;
+    }
+  };
+}
 
 /**
  * A companion drawn as layered SVG so its parts move independently.
@@ -103,7 +130,19 @@ const MOOD: Record<Mood, MoodSpec> = {
 
 /* ------------------------------------------------------------------ eyes */
 
-function Eyes({ shape, palette, blink }: { shape: EyeShape; palette: Palette; blink: boolean }) {
+function Eyes({
+  shape,
+  palette,
+  blink,
+  gazeX,
+  gazeY,
+}: {
+  shape: EyeShape;
+  palette: Palette;
+  blink: boolean;
+  gazeX: MotionValue<number>;
+  gazeY: MotionValue<number>;
+}) {
   const closed = shape === "closed" || blink;
   const y = 42;
 
@@ -130,9 +169,14 @@ function Eyes({ shape, palette, blink }: { shape: EyeShape; palette: Palette; bl
     <g>
       {[40, 60].map((cx) => (
         <g key={cx}>
+          {/* The eye itself is fixed; only the glint inside it travels, which
+              is what reads as the pupil following the pointer. Its range is
+              kept inside the eye so it never slides off the edge. */}
           <ellipse cx={cx} cy={y} rx={r} ry={r * 1.12} fill="#1b1526" />
-          <circle cx={cx + 1.5} cy={y - 1.6} r={r * 0.34} fill="#fff" opacity={0.95} />
-          <circle cx={cx - 1.7} cy={y + 1.8} r={r * 0.17} fill="#fff" opacity={0.55} />
+          <motion.g style={{ x: gazeX, y: gazeY }}>
+            <circle cx={cx + 1.5} cy={y - 1.6} r={r * 0.34} fill="#fff" opacity={0.95} />
+            <circle cx={cx - 1.7} cy={y + 1.8} r={r * 0.17} fill="#fff" opacity={0.55} />
+          </motion.g>
         </g>
       ))}
     </g>
@@ -450,6 +494,52 @@ export default function Creature({
 
   // Blinking runs on its own clock — tying it to the mood loop would make it
   // metronomic, and real blinks are irregular.
+  /*
+   * Gaze. Written to motion values rather than state, so following the
+   * pointer never re-renders the component, and sprung so the eyes ease
+   * across instead of snapping.
+   */
+  const svgRef = useRef<SVGSVGElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const gazeX = useSpring(rawX, { stiffness: 260, damping: 24, mass: 0.35 });
+  const gazeY = useSpring(rawY, { stiffness: 260, damping: 24, mass: 0.35 });
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    let frame = 0;
+    let px = 0;
+    let py = 0;
+
+    // One measurement per frame at most — reading layout on every pointer
+    // event would thrash.
+    const apply = () => {
+      frame = 0;
+      const el = svgRef.current;
+      if (!el) return;
+      const box = el.getBoundingClientRect();
+      if (!box.width) return;
+
+      const eyeX = box.left + box.width / 2;
+      const eyeY = box.top + box.height * 0.42;
+      const dx = px - eyeX;
+      const dy = py - eyeY;
+      const dist = Math.hypot(dx, dy) || 1;
+      // Reaches full deflection about a head's width away, then holds.
+      const reach = Math.min(1, dist / (box.width * 1.6));
+
+      // Small, because the glint travels inside the eye rather than with it.
+      rawX.set((dx / dist) * reach * 1.3);
+      rawY.set((dy / dist) * reach * 1.15);
+    };
+
+    return watchPointer((x, y) => {
+      px = x;
+      py = y;
+      if (!frame) frame = requestAnimationFrame(apply);
+    });
+  }, [reduceMotion, rawX, rawY]);
+
   const [blink, setBlink] = useState(false);
   useEffect(() => {
     if (reduceMotion || spec.eyes === "closed") return;
@@ -472,6 +562,7 @@ export default function Creature({
 
   return (
     <svg
+      ref={svgRef}
       viewBox="0 0 100 100"
       width={size}
       height={size}
@@ -550,7 +641,7 @@ export default function Creature({
             {g.ears}
           </motion.g>
           {g.head}
-          <Eyes shape={spec.eyes} palette={p} blink={blink} />
+          <Eyes shape={spec.eyes} palette={p} blink={blink} gazeX={gazeX} gazeY={gazeY} />
         </motion.g>
       </motion.g>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Ambient from "@/components/game/Ambient";
 import GameNav from "@/components/game/GameNav";
@@ -13,6 +13,8 @@ import { RARITY, Rarity } from "@/lib/rarity";
 import { riseIn, stagger } from "@/lib/motion";
 import { useAudio } from "@/components/game/AudioProvider";
 import { useCursor } from "@/components/game/CursorLayer";
+import Creature from "@/components/game/Creature";
+import type { CompanionState, Mood } from "@/lib/companion";
 
 type BagItem = {
   slug: string;
@@ -41,6 +43,9 @@ export default function Bag() {
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [announce, setAnnounce] = useState("");
+  const [companion, setCompanion] = useState<CompanionState | null>(null);
+  const [reaction, setReaction] = useState<Mood | null>(null);
+  const reactTimer = useRef<ReturnType<typeof setTimeout>>();
   const { play } = useAudio();
   const { burst } = useCursor();
 
@@ -59,6 +64,21 @@ export default function Bag() {
 
   useEffect(load, [load]);
 
+  useEffect(() => {
+    fetch("/api/companion")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setCompanion(d.companion))
+      .catch(() => {});
+    return () => clearTimeout(reactTimer.current);
+  }, []);
+
+  /** Let the companion respond to gear changes, the way it does on the log. */
+  function react(mood: Mood, ms = 2600) {
+    setReaction(mood);
+    clearTimeout(reactTimer.current);
+    reactTimer.current = setTimeout(() => setReaction(null), ms);
+  }
+
   async function toggle(item: BagItem) {
     setBusy(item.slug);
     try {
@@ -76,10 +96,12 @@ export default function Bag() {
       setItems(data.items);
       if (!item.equipped) {
         play("equip");
+        react("STARSTRUCK");
         burst(item.rarity === "LEGENDARY" ? "gold" : "violet");
         setAnnounce(`${item.name} equipped.`);
       } else {
         play("unequip");
+        react("IDLE", 1200);
         setAnnounce(`${item.name} unequipped.`);
       }
     } catch {
@@ -120,7 +142,18 @@ export default function Bag() {
         {/* equipment slots */}
         <section aria-label="Equipped" className="panel mb-5 p-4">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-dim">Equipped</p>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+            {companion && (
+              <div className="flex shrink-0 flex-col items-center">
+                <Creature
+                  species={companion.species}
+                  mood={reaction ?? companion.mood}
+                  size={104}
+                />
+                <span className="mt-1 font-display text-[11px] text-text">{companion.name}</span>
+              </div>
+            )}
+            <div className="grid min-w-0 flex-1 grid-cols-5 gap-2">
             {SLOTS.map((slot) => {
               const worn = equipped.find((i) => i.slot === slot);
               const rarity = worn ? RARITY[worn.rarity as Rarity] : null;
@@ -143,6 +176,7 @@ export default function Bag() {
                 </div>
               );
             })}
+            </div>
           </div>
         </section>
 
