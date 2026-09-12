@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Mood, companionLine, stageMeta } from "@/lib/companion";
 import { SPRING } from "@/lib/motion";
+import Creature from "./Creature";
 
 export type CompanionState = {
   name: string;
+  species: string;
   personality: string;
   stage: string;
   stageTitle: string;
@@ -116,7 +118,7 @@ export default function Companion({
           }
           whileTap={{ scale: 0.88 }}
         >
-          <span className="block text-6xl drop-shadow-[0_8px_18px_rgba(0,0,0,.6)]">{state.face}</span>
+          <Creature species={state.species} mood={mood} size={84} />
 
           {/* celebration sparks */}
           {!reduceMotion && (mood === "CELEBRATING" || mood === "EXCITED" || mood === "STARSTRUCK") && (

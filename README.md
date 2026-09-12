@@ -57,8 +57,8 @@ Every value in that chain is stored in Postgres and calculated on the server. Th
 | **Chests** | Four rarities. Earned from level-ups, streak milestones (3/7/14/30/100 days), achievements and daily challenges. Opening grants an unowned item rolled by rarity, or gold if the pool is exhausted. |
 | **Shop** | 16 items across four rarity tiers, with owned/affordable/unaffordable states. |
 | **Bag & equipment** | Five slots (Weapon, Armor, Cosmetic, Companion, Trinket), one item each. Equipped gear appears on the character. |
-| **Companion** | Five evolution stages driven by bond earned from real activity. Five personalities with distinct voice lines, plus mood and reaction states. |
-| **Character evolution** | Five level tiers — Novice, Adventurer (10), Veteran (25), Elite (50), Legendary (100) — each changing the character's colour, aura and orbiting particles. |
+| **Companion** | Six characters to choose from at signup, each drawn as layered SVG so ears, eyes, tail and body animate separately. Five evolution stages driven by bond earned from real activity, five personalities with distinct voice lines, and seven mood states wired to real events. |
+| **Character evolution** | Your companion stands as the hero centrepiece and reacts to what happens — posting a quest, completing one, levelling, opening a chest, starting a focus session. Five level tiers — Novice, Adventurer (10), Veteran (25), Elite (50), Legendary (100) — each changing the plinth's colour, aura and orbiting particles. |
 | **Focus mode** | 15/25/45-minute sessions. Elapsed time is verified server-side. Rewards scale with minutes focused. |
 | **Focus sounds** | Ten layerable ambiences (rain, fireplace, forest, waterfall, ocean, wind, thunder, cafe, night, birds) with per-layer volume. Recordings, level-matched and cross-faded into seamless loops. Mix is persisted. |
 | **Stats & history** | Record screen with totals, attribute progress, completions by rarity, streak milestones, a 26-week activity heatmap and a month/year calendar. |
@@ -420,6 +420,7 @@ kairo/
 │   ├── chests.ts  rarity.ts     # rarity and reward tables
 │   ├── companion.ts  evolution.ts
 │   ├── audio.ts  ambient.ts     # SFX bus, soundscape mixer
+│   ├── characters.ts            # the six companions
 │   ├── cursorField.ts           # canvas particle engine
 │   └── auth.ts  prisma.ts  session.ts
 ├── public/ambient/              # 10 focus soundscape loops

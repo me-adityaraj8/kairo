@@ -48,6 +48,7 @@ model Companion {
   id             String   @id @default(cuid())
   userId         String   @unique
   name           String   @default("Pip")
+  species        String   @default("fox")
   personality    String   @default("PLAYFUL")
   stage          String   @default("BASIC")
   bond           Int      @default(0)

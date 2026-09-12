@@ -85,6 +85,7 @@ export async function GET() {
       })),
       companion: {
         name: companion.name,
+        species: companion.species,
         personality: companion.personality,
         stage: companion.stage,
         stageTitle: meta.title,

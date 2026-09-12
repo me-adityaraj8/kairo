@@ -10,6 +10,8 @@ import GameInput from "@/components/game/GameInput";
 import OAuthButtons from "@/components/game/OAuthButtons";
 import { SPRING } from "@/lib/motion";
 import { attributeIcon } from "@/lib/rarity";
+import Creature from "@/components/game/Creature";
+import { SPECIES, DEFAULT_SPECIES, type SpeciesId } from "@/lib/characters";
 
 type FieldErrors = { email?: string; password?: string; displayName?: string };
 
@@ -20,6 +22,7 @@ export default function RegisterForm({ oauth }: { oauth: { google: boolean; gith
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [species, setSpecies] = useState<SpeciesId>(DEFAULT_SPECIES);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [pending, setPending] = useState(false);
 
@@ -40,7 +43,7 @@ export default function RegisterForm({ oauth }: { oauth: { google: boolean; gith
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, displayName }),
+      body: JSON.stringify({ email, password, displayName, species }),
     });
 
     if (!res.ok) {
@@ -62,7 +65,7 @@ export default function RegisterForm({ oauth }: { oauth: { google: boolean; gith
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={SPRING.subtle}
-        className="w-full max-w-sm"
+        className="w-full max-w-md"
       >
         <div className="mb-7 text-center">
           <motion.span
@@ -105,6 +108,46 @@ export default function RegisterForm({ oauth }: { oauth: { google: boolean; gith
               autoComplete="new-password"
               placeholder="At least 8 characters"
             />
+
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-dim">
+                Choose your companion
+              </p>
+              <div className="mt-2.5 grid grid-cols-3 gap-2">
+                {SPECIES.map((s) => {
+                  const active = species === s.id;
+                  return (
+                    <motion.button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSpecies(s.id)}
+                      aria-pressed={active}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={SPRING.snappy}
+                      className="flex flex-col items-center gap-0.5 rounded-xl border p-2 transition-colors"
+                      style={{
+                        borderColor: active ? s.palette.glow : "rgba(255,255,255,.08)",
+                        background: active ? `${s.palette.glow}14` : "rgba(255,255,255,.02)",
+                        boxShadow: active ? `0 0 20px -8px ${s.palette.glow}` : undefined,
+                      }}
+                    >
+                      <Creature species={s.id} mood={active ? "HAPPY" : "IDLE"} size={54} />
+                      <span
+                        className="font-display text-[11px]"
+                        style={{ color: active ? s.palette.glow : "var(--text)" }}
+                      >
+                        {s.name}
+                      </span>
+                      <span className="text-[9px] leading-tight text-dim">{s.title}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[10px] leading-relaxed text-dim">
+                {SPECIES.find((s) => s.id === species)?.blurb}
+              </p>
+            </div>
 
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-dim">

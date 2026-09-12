@@ -4,26 +4,34 @@ import { motion, useReducedMotion } from "framer-motion";
 import { seeded } from "@/lib/motion";
 import { nextTier, tierFor } from "@/lib/evolution";
 import { RARITY, Rarity } from "@/lib/rarity";
+import Creature from "./Creature";
+import type { Mood } from "@/lib/companion";
 
 type Owned = { slug: string; payload: string; rarity?: string; slot?: string; equipped?: boolean };
 
 /**
- * Hero centrepiece. Appearance is driven by level tier, so progression is
- * visible rather than just a number going up.
+ * Hero centrepiece. The chosen companion stands here and reacts to what
+ * happens; the plinth around it is driven by level tier, so progression shows
+ * up as more than a number going up.
  */
 export default function CharacterStage({
   displayName,
   level,
   owned,
   celebrate,
+  species,
+  mood,
+  onInteract,
 }: {
   displayName: string;
   level: number;
   owned: Owned[];
   celebrate: boolean;
+  species?: string;
+  mood?: Mood;
+  onInteract?: () => void;
 }) {
   const reduceMotion = useReducedMotion();
-  const initial = displayName.trim().charAt(0).toUpperCase() || "A";
   const tier = tierFor(level);
   const upcoming = nextTier(level);
 
@@ -96,16 +104,34 @@ export default function CharacterStage({
               ? { duration: 0.8, ease: "easeOut" }
               : { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
           }
-          className="grid h-32 w-32 place-items-center rounded-[2rem] border sm:h-36 sm:w-36"
+          onClick={onInteract}
+          role={onInteract ? "button" : undefined}
+          tabIndex={onInteract ? 0 : undefined}
+          onKeyDown={
+            onInteract
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onInteract();
+                  }
+                }
+              : undefined
+          }
+          aria-label={onInteract ? "Greet your companion" : undefined}
+          className={`grid h-32 w-32 place-items-center rounded-[2rem] border sm:h-36 sm:w-36 ${
+            onInteract ? "cursor-pointer" : ""
+          }`}
           style={{
             borderColor: tier.ring,
             background: tier.aura,
             boxShadow: `0 0 42px -6px ${tier.tint}aa, 0 18px 40px -18px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.28)`,
           }}
         >
-          <span className="font-display text-5xl text-text drop-shadow-[0_3px_10px_rgba(0,0,0,.6)] sm:text-6xl">
-            {initial}
-          </span>
+          <Creature
+            species={species ?? "fox"}
+            mood={celebrate ? "CELEBRATING" : mood ?? "IDLE"}
+            size={116}
+          />
         </motion.div>
 
         {/* level medallion */}

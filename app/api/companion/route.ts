@@ -18,11 +18,12 @@ async function ensureCompanion(userId: string) {
   return prisma.companion.create({ data: { userId } });
 }
 
-function shape(c: { name: string; personality: string; stage: string; bond: number; lastInteracted: Date }, focusActive: boolean) {
+function shape(c: { name: string; species: string; personality: string; stage: string; bond: number; lastInteracted: Date }, focusActive: boolean) {
   const meta = stageMeta(c.stage);
   const upcoming = nextStage(c.stage);
   return {
     name: c.name,
+    species: c.species,
     personality: c.personality,
     stage: c.stage,
     stageTitle: meta.title,

@@ -156,6 +156,7 @@ export default function Dashboard() {
     if (!res.ok) throw new Error("create failed");
     const { quest } = await res.json();
     setQuests((prev) => (prev ? [quest, ...prev] : [quest]));
+    react("EXCITED", 2000);
     setAnnouncement(`Quest posted: ${quest.title}`);
   }
 
@@ -407,6 +408,9 @@ export default function Dashboard() {
                     level={character.user.level}
                     owned={character.owned}
                     celebrate={celebrate}
+                    species={companion?.species}
+                    mood={reaction ?? companion?.mood}
+                    onInteract={companion ? interactCompanion : undefined}
                   />
                   <div className="border-t border-white/8 p-4">
                     <HudBar
