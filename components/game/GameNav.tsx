@@ -8,6 +8,7 @@ import { useAudio } from "./AudioProvider";
 
 const LINKS = [
   { href: "/app", label: "Quests", icon: "⚔️" },
+  { href: "/app/achievements", label: "Deeds", icon: "🏆" },
   { href: "/app/shop", label: "Shop", icon: "🏺" },
 ];
 

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Character, CompleteResult, Difficulty, Quest } from "@/lib/types";
 import { riseIn, stagger } from "@/lib/motion";
+import { ServerEvent, feedItem, toFeed } from "@/lib/cascade";
+import { Mood } from "@/lib/companion";
 import Ambient from "@/components/game/Ambient";
 import GameNav from "@/components/game/GameNav";
 import CharacterStage from "@/components/game/CharacterStage";
@@ -18,12 +20,25 @@ import Toast from "@/components/game/Toast";
 import Shimmer from "@/components/game/Shimmer";
 import WorldBackground from "@/components/game/WorldBackground";
 import AudioControls from "@/components/game/AudioControls";
+import Companion, { CompanionState } from "@/components/game/Companion";
+import ComboMeter from "@/components/game/ComboMeter";
+import ChallengePanel, { Challenge } from "@/components/game/ChallengePanel";
+import ChestCeremony, { ChestReward } from "@/components/game/ChestCeremony";
+import EventFeed, { GameEvent } from "@/components/game/EventFeed";
+import FocusMode from "@/components/game/FocusMode";
 import { useAudio } from "@/components/game/AudioProvider";
+
+type PendingChest = { id: string; rarity: string; source: string; label: string; tint: string };
 
 export default function Dashboard() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [quests, setQuests] = useState<Quest[] | null>(null);
+  const [companion, setCompanion] = useState<CompanionState | null>(null);
+  const [challenges, setChallenges] = useState<Challenge[] | null>(null);
+  const [chests, setChests] = useState<PendingChest[]>([]);
+
   const [modalOpen, setModalOpen] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [levelUp, setLevelUp] = useState<LevelUpPayload | null>(null);
   const [announcement, setAnnouncement] = useState("");
@@ -31,12 +46,30 @@ export default function Dashboard() {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [attrFlash, setAttrFlash] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const [events, setEvents] = useState<GameEvent[]>([]);
+  const [reaction, setReaction] = useState<Mood | null>(null);
+  const [openingChest, setOpeningChest] = useState(false);
+  const [chestReward, setChestReward] = useState<ChestReward | null>(null);
+  const [chestOpen, setChestOpen] = useState<PendingChest | null>(null);
 
   const newQuestButtonRef = useRef<HTMLButtonElement>(null);
   const goldAnchor = useRef<HTMLDivElement>(null);
   const xpAnchor = useRef<HTMLDivElement>(null);
   const flightId = useRef(0);
   const { play } = useAudio();
+
+  const pushEvents = useCallback((incoming: GameEvent[]) => {
+    if (!incoming.length) return;
+    setEvents((prev) => [...prev, ...incoming]);
+    incoming.forEach((e) => {
+      setTimeout(() => setEvents((prev) => prev.filter((p) => p.id !== e.id)), 4200);
+    });
+  }, []);
+
+  const react = useCallback((mood: Mood, ms = 2200) => {
+    setReaction(mood);
+    setTimeout(() => setReaction(null), ms);
+  }, []);
 
   const load = useCallback(async () => {
     const [charRes, questRes] = await Promise.all([fetch("/api/character"), fetch("/api/quests")]);
@@ -46,11 +79,21 @@ export default function Dashboard() {
     }
     setCharacter(await charRes.json());
     setQuests((await questRes.json()).quests);
+
+    fetch("/api/companion").then((r) => r.ok && r.json()).then((d) => d && setCompanion(d.companion)).catch(() => {});
+    fetch("/api/challenges").then((r) => r.ok && r.json()).then((d) => d && setChallenges(d.challenges)).catch(() => {});
+    fetch("/api/chests").then((r) => r.ok && r.json()).then((d) => d && setChests(d.chests)).catch(() => {});
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  const refreshSideState = useCallback(() => {
+    fetch("/api/challenges").then((r) => r.ok && r.json()).then((d) => d && setChallenges(d.challenges)).catch(() => {});
+    fetch("/api/chests").then((r) => r.ok && r.json()).then((d) => d && setChests(d.chests)).catch(() => {});
+    fetch("/api/companion").then((r) => r.ok && r.json()).then((d) => d && setCompanion(d.companion)).catch(() => {});
+  }, []);
 
   async function createQuest(input: { title: string; attributeId: string; difficulty: Difficulty }) {
     const res = await fetch("/api/quests", {
@@ -96,7 +139,12 @@ export default function Dashboard() {
       const res = await fetch(`/api/quests/${quest.id}/complete`, { method: "POST" });
       if (!res.ok) throw new Error("complete failed");
 
-      const result: CompleteResult = await res.json();
+      const result: CompleteResult & {
+        combo: { count: number; multiplier: number };
+        events: ServerEvent[];
+        pendingChests: number;
+        companion: { stage: string; bond: number } | null;
+      } = await res.json();
 
       if (origin) launchFlight(origin, result.xpGained, result.goldGained);
 
@@ -107,7 +155,12 @@ export default function Dashboard() {
         prev
           ? {
               ...prev,
-              user: { ...prev.user, ...result.user, streak: result.streak },
+              user: {
+                ...prev.user,
+                ...result.user,
+                streak: result.streak,
+                combo: result.combo,
+              },
               attributes: prev.attributes.map((a) =>
                 a.id === result.attribute.id ? result.attribute : a
               ),
@@ -118,16 +171,29 @@ export default function Dashboard() {
       setAttrFlash(result.attribute.id);
       setTimeout(() => setAttrFlash(null), 900);
 
+      pushEvents([
+        feedItem("✨", `+${result.xpGained} XP`, "#4ce6cf"),
+        feedItem("🪙", `+${result.goldGained} gold`, "#ffc542"),
+        ...toFeed(result.events),
+      ]);
+
+      if (result.combo.multiplier >= 2) {
+        react("EXCITED");
+        play("streak");
+      } else {
+        react("HAPPY", 1800);
+      }
+
+      if (result.events.some((e) => e.type === "ACHIEVEMENT")) play("purchase");
+      if (result.events.some((e) => e.type === "COMPANION_EVOLVED")) react("STARSTRUCK", 3000);
+
       setAnnouncement(
         `Gained ${result.xpGained} XP and ${result.goldGained} gold. ${result.attribute.name} is now level ${result.attribute.level}.`
       );
 
-      if (result.streak > (prevCharacter?.user.streak ?? 0)) {
-        setTimeout(() => play("streak"), 520);
-      }
-
       if (result.leveledUp) {
         setCelebrate(true);
+        react("CELEBRATING", 3200);
         setTimeout(() => setCelebrate(false), 1000);
         setTimeout(() => play("levelup"), 620);
         setTimeout(
@@ -141,6 +207,8 @@ export default function Dashboard() {
           650
         );
       }
+
+      refreshSideState();
     } catch {
       setQuests(prevQuests);
       setCharacter(prevCharacter);
@@ -168,8 +236,48 @@ export default function Dashboard() {
     setAnnouncement(`Quest abandoned: ${quest.title}`);
   }
 
+  async function openChest() {
+    if (!chestOpen) return;
+    setOpeningChest(true);
+    try {
+      const res = await fetch(`/api/chests/${chestOpen.id}/open`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data.error ?? "Could not open the chest");
+        setChestOpen(null);
+        return;
+      }
+      play("purchase");
+      setChestReward(data);
+      react(data.item?.rarity === "LEGENDARY" ? "STARSTRUCK" : "CELEBRATING", 3000);
+      setCharacter((prev) =>
+        prev ? { ...prev, user: { ...prev.user, gold: data.totalGold } } : prev
+      );
+      pushEvents([feedItem("🎁", data.item ? `Received ${data.item.name}` : `+${data.gold} gold`, chestOpen.tint)]);
+      refreshSideState();
+    } catch {
+      play("error");
+      setToast("Connection lost — chest not opened");
+      setChestOpen(null);
+    } finally {
+      setOpeningChest(false);
+    }
+  }
+
+  async function interactCompanion() {
+    play("click");
+    react("HAPPY", 1600);
+    const res = await fetch("/api/companion", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interact: true }),
+    }).catch(() => null);
+    if (res?.ok) setCompanion((await res.json()).companion);
+  }
+
   const active = quests?.filter((q) => !q.done) ?? [];
   const completed = quests?.filter((q) => q.done) ?? [];
+  const combo = character?.user.combo ?? { count: 0, multiplier: 1 };
 
   return (
     <>
@@ -182,25 +290,53 @@ export default function Dashboard() {
           {announcement}
         </div>
 
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-display text-lg text-gold text-glow-gold">Kairo</h1>
-          <AudioControls />
+          <div className="flex items-center gap-2.5">
+            <ComboMeter count={combo.count} multiplier={combo.multiplier} />
+            {chests.length > 0 && (
+              <button
+                onClick={() => {
+                  setChestReward(null);
+                  setChestOpen(chests[0]);
+                  play("click");
+                }}
+                className="relative grid h-10 w-10 place-items-center rounded-xl border border-gold/40 bg-gold/12 text-base backdrop-blur transition-colors hover:bg-gold/20"
+                aria-label={`${chests.length} unopened chest${chests.length > 1 ? "s" : ""}`}
+              >
+                <span aria-hidden="true">🎁</span>
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
+                  {chests.length}
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setFocusOpen(true);
+                play("open");
+              }}
+              className="grid h-10 w-10 place-items-center rounded-xl border border-white/12 bg-white/[0.06] text-base backdrop-blur transition-colors hover:bg-white/[0.12]"
+              aria-label="Open focus mode"
+            >
+              <span aria-hidden="true">🧘</span>
+            </button>
+            <AudioControls />
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:items-start">
-          {/* character + hud */}
           <motion.section
             aria-label="Character"
             initial="hidden"
             animate="show"
             variants={stagger(0.08)}
-            className="min-w-0"
+            className="flex min-w-0 flex-col gap-4"
           >
             {!character ? (
-              <div className="flex flex-col gap-4">
+              <>
                 <Shimmer className="h-72" />
                 <Shimmer className="h-40" />
-              </div>
+              </>
             ) : (
               <>
                 <motion.div variants={riseIn} className="panel overflow-hidden">
@@ -223,17 +359,31 @@ export default function Dashboard() {
                   </div>
                 </motion.div>
 
-                <motion.div variants={riseIn} className="mt-4">
+                {companion && (
+                  <motion.div variants={riseIn} className="panel p-4">
+                    <Companion
+                      state={companion}
+                      reaction={reaction}
+                      chaos={false}
+                      onInteract={interactCompanion}
+                    />
+                  </motion.div>
+                )}
+
+                <motion.div variants={riseIn}>
                   <h2 className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.18em] text-dim">
                     Attributes
                   </h2>
                   <AttributeOrbs attributes={character.attributes} flashId={attrFlash} />
                 </motion.div>
+
+                <motion.div variants={riseIn}>
+                  <ChallengePanel challenges={challenges} />
+                </motion.div>
               </>
             )}
           </motion.section>
 
-          {/* quests */}
           <section aria-label="Quest log" className="min-w-0">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-lg text-text">Quests</h2>
@@ -330,6 +480,39 @@ export default function Dashboard() {
         />
       )}
 
+      <FocusMode
+        open={focusOpen}
+        onClose={() => setFocusOpen(false)}
+        onStarted={() => react("FOCUSED", 4000)}
+        onFinished={(result) => {
+          play("levelup");
+          react("CELEBRATING", 3000);
+          setCharacter((prev) =>
+            prev ? { ...prev, user: { ...prev.user, ...result.user } } : prev
+          );
+          pushEvents([
+            feedItem("🧘", `Focus complete · ${result.minutes}m`, "#4ce6cf"),
+            feedItem("✨", `+${result.xpGained} XP`, "#4ce6cf"),
+            ...toFeed(result.events as ServerEvent[]),
+          ]);
+          refreshSideState();
+          setFocusOpen(false);
+        }}
+      />
+
+      <ChestCeremony
+        pending={chestOpen}
+        reward={chestReward}
+        busy={openingChest}
+        onOpen={openChest}
+        onClose={() => {
+          setChestOpen(null);
+          setChestReward(null);
+          load();
+        }}
+      />
+
+      <EventFeed events={events} />
       <RewardFlight
         flights={flights}
         onDone={(id) => setFlights((prev) => prev.filter((f) => f.id !== id))}

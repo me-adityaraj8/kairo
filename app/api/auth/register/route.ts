@@ -34,6 +34,7 @@ export async function POST(req: Request) {
         passwordHash,
         displayName,
         attributes: { create: ATTRIBUTES.map((name) => ({ name })) },
+        companion: { create: {} },
       },
     });
 

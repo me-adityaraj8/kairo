@@ -26,7 +26,10 @@ export type Character = {
     xpToNext: number;
     gold: number;
     streak: number;
+    longestStreak?: number;
+    combo?: { count: number; multiplier: number };
   };
+  pendingChests?: number;
   attributes: CharacterAttribute[];
   owned: { slug: string; payload: string }[];
 };

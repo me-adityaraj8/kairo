@@ -19,9 +19,101 @@ model User {
   streak       Int         @default(0)
   lastActiveOn String?
   createdAt    DateTime    @default(now())
-  attributes   Attribute[]
-  quests       Quest[]
-  inventory    Inventory[]
+
+  // combo window: consecutive completions inside comboExpiresAt keep the chain alive
+  comboCount     Int       @default(0)
+  comboExpiresAt DateTime?
+
+  // running totals so achievement checks stay cheap and truthful
+  longestStreak    Int @default(0)
+  totalXpEarned    Int @default(0)
+  questsCompleted  Int @default(0)
+  focusMinutes     Int @default(0)
+  chestsOpened     Int @default(0)
+
+  attributes       Attribute[]
+  quests           Quest[]
+  inventory        Inventory[]
+  companion        Companion?
+  achievements     UserAchievement[]
+  dailyChallenges  DailyChallenge[]
+  chests           Chest[]
+  focusSessions    FocusSession[]
+  activityDays     ActivityDay[]
+}
+
+model Companion {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  name           String   @default("Pip")
+  personality    String   @default("PLAYFUL")
+  stage          String   @default("BASIC")
+  bond           Int      @default(0)
+  lastInteracted DateTime @default(now())
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAchievement {
+  id         String   @id @default(cuid())
+  userId     String
+  key        String
+  unlockedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+model DailyChallenge {
+  id       String  @id @default(cuid())
+  userId   String
+  day      String
+  key      String
+  target   Int
+  progress Int     @default(0)
+  claimed  Boolean @default(false)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day, key])
+  @@index([userId, day])
+}
+
+model Chest {
+  id        String    @id @default(cuid())
+  userId    String
+  rarity    String
+  source    String
+  openedAt  DateTime?
+  rewardId  String?
+  rewardGold Int?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, openedAt])
+}
+
+model FocusSession {
+  id          String    @id @default(cuid())
+  userId      String
+  minutes     Int
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+}
+
+model ActivityDay {
+  id           String @id @default(cuid())
+  userId       String
+  day          String
+  quests       Int    @default(0)
+  xp           Int    @default(0)
+  focusMinutes Int    @default(0)
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@index([userId, day])
 }
 
 model Attribute {
@@ -57,15 +149,18 @@ model Item {
   name      String
   cost      Int
   payload   String
+  rarity    String      @default("COMMON")
+  slot      String      @default("TRINKET")
   inventory Inventory[]
 }
 
 model Inventory {
-  id     String @id @default(cuid())
-  userId String
-  itemId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  item   Item   @relation(fields: [itemId], references: [id])
+  id       String  @id @default(cuid())
+  userId   String
+  itemId   String
+  equipped Boolean @default(false)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item     Item    @relation(fields: [itemId], references: [id])
 
   @@unique([userId, itemId])
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { XP_FOR_LEVEL } from "@/lib/engine";
+import { readCombo } from "@/lib/combo";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,11 @@ export async function GET() {
     });
     if (!user) return NextResponse.json({ error: "Adventurer not found" }, { status: 404 });
 
+    const combo = readCombo(user.comboCount, user.comboExpiresAt);
+    const pendingChests = await prisma.chest.count({
+      where: { userId: user.id, openedAt: null },
+    });
+
     return NextResponse.json({
       user: {
         displayName: user.displayName,
@@ -27,7 +33,10 @@ export async function GET() {
         xpToNext: XP_FOR_LEVEL(user.level),
         gold: user.gold,
         streak: user.streak,
+        longestStreak: user.longestStreak,
+        combo: { count: combo.count, multiplier: combo.multiplier },
       },
+      pendingChests,
       attributes: user.attributes.map((a) => ({
         id: a.id,
         name: a.name,
