@@ -469,30 +469,25 @@ Type checking (`tsc --noEmit`) and linting run clean.
 
 ## Screenshots
 
-> Captures go in [`docs/`](docs/). Uncomment the block below once they are added.
+### Quest log & HUD
+Character with equipped gear, companion, XP bar, gold, streak and combo — beside four active quests showing all rarity tiers with their reward previews.
 
-<!--
-| | |
+![Quest log and HUD](docs/quests.png)
+
+### Reward chest
+Opening a chest reveals the rolled item and its rarity, then writes it to the bag.
+
+![Chest reveal](docs/chest.png)
+
+| Character & progression | Tavern shop |
 |---|---|
-| ![Landing](docs/landing.png) | ![Quest log](docs/quests.png) |
-| **Landing** | **Quest log & HUD** |
-| ![Character](docs/character.png) | ![Shop](docs/shop.png) |
-| **Character & activity** | **Tavern shop** |
+| ![Character screen](docs/character.png) | ![Tavern shop](docs/shop.png) |
+| Evolution ladder, record stats and attributes | Four rarity tiers with owned / affordable / unaffordable states |
 
-![Quest completion cascade](docs/cascade.gif)
-
-*One completion: XP and coins travel to the HUD, the combo climbs, an achievement unlocks and a chest drops.*
--->
-
-| Shot | File |
+| Activity | Landing |
 |---|---|
-| Landing page hero | `docs/landing.png` |
-| Quest log with populated HUD | `docs/quests.png` |
-| Character screen — evolution, stats, heatmap | `docs/character.png` |
-| Tavern shop showing rarity tiers | `docs/shop.png` |
-| Completion cascade (GIF) | `docs/cascade.gif` |
-
----
+| ![Activity heatmap and calendar](docs/activity.png) | ![Landing page](docs/landing.png) |
+| 26-week heatmap and month/year calendar | Static landing page |
 
 ## License
 
