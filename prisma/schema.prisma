@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  displayName  String
+  level        Int         @default(1)
+  xp           Int         @default(0)
+  gold         Int         @default(0)
+  streak       Int         @default(0)
+  lastActiveOn String?
+  createdAt    DateTime    @default(now())
+  attributes   Attribute[]
+  quests       Quest[]
+  inventory    Inventory[]
+}
+
+model Attribute {
+  id     String  @id @default(cuid())
+  userId String
+  name   String
+  level  Int     @default(1)
+  xp     Int     @default(0)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quests Quest[]
+
+  @@unique([userId, name])
+}
+
+model Quest {
+  id          String     @id @default(cuid())
+  userId      String
+  attributeId String
+  title       String
+  difficulty  Difficulty
+  done        Boolean    @default(false)
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attribute   Attribute  @relation(fields: [attributeId], references: [id])
+
+  @@index([userId, done])
+}
+
+model Item {
+  id        String      @id @default(cuid())
+  slug      String      @unique
+  name      String
+  cost      Int
+  payload   String
+  inventory Inventory[]
+}
+
+model Inventory {
+  id     String @id @default(cuid())
+  userId String
+  itemId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId])
+}
+
+enum Difficulty {
+  EASY
+  NORMAL
+  HARD
+  EPIC
+}
