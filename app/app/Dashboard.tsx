@@ -136,7 +136,7 @@ export default function Dashboard() {
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <section aria-label="Character" className="flex flex-col gap-4">
+        <section aria-label="Character" className="flex min-w-0 flex-col gap-4">
           {!character ? (
             <>
               <Skeleton className="h-40" />
@@ -205,8 +205,8 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section aria-label="Quest log" className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+        <section aria-label="Quest log" className="flex min-w-0 flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-pixel text-xs text-text">Quest Log</h2>
             <PixelButton ref={newQuestButtonRef} onClick={() => setModalOpen(true)}>
               Post New Quest
