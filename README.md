@@ -315,6 +315,8 @@ Because there is no adapter, an OAuth provider returns *its own* user id rather 
 
 The ten focus soundscapes are recordings, in `public/ambient` (9.6 MB total). They are mastered to a common level and fetched only when a soundscape is first switched on. Each one has a synthesised equivalent that plays if its file is missing or fails to decode.
 
+Source recordings are from [Pixabay](https://pixabay.com/sound-effects/) under the Pixabay Content License, trimmed and level-matched for looping.
+
 ---
 
 ## API
