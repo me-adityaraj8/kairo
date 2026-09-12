@@ -26,7 +26,7 @@ export async function POST(_req: Request, { params }: { params: { slug: string }
       await tx.inventory.create({ data: { userId: user.id, itemId: item.id } });
 
       return { gold: updated.gold };
-    });
+    }, { timeout: 20000, maxWait: 15000 });
 
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 409 });

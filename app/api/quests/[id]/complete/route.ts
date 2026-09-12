@@ -18,13 +18,17 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const fresh = await tx.quest.findUnique({ where: { id: quest.id } });
-      if (!fresh || fresh.done) return null;
+      // Atomic claim: only one request can flip done false -> true.
+      const claimed = await tx.quest.updateMany({
+        where: { id: quest.id, done: false },
+        data: { done: true, completedAt: new Date() },
+      });
+      if (claimed.count === 0) return null;
 
       const user = await tx.user.findUniqueOrThrow({ where: { id: sessionUser.id } });
-      const attribute = await tx.attribute.findUniqueOrThrow({ where: { id: fresh.attributeId } });
+      const attribute = await tx.attribute.findUniqueOrThrow({ where: { id: quest.attributeId } });
 
-      const reward = REWARD[fresh.difficulty];
+      const reward = REWARD[quest.difficulty];
       const today = todayUTC();
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
@@ -55,11 +59,6 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
         data: { level: attrProgress.level, xp: attrProgress.xp },
       });
 
-      await tx.quest.update({
-        where: { id: fresh.id },
-        data: { done: true, completedAt: new Date() },
-      });
-
       return {
         xpGained,
         goldGained,
@@ -80,7 +79,8 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
         leveledUp: userProgress.leveledUp,
         attributeLeveledUp: attrProgress.leveledUp,
       };
-    });
+      // Neon can idle-suspend; the default 5s interactive-transaction cap is too tight.
+    }, { timeout: 20000, maxWait: 15000 });
 
     if (!result) {
       return NextResponse.json({ error: "Quest already completed" }, { status: 409 });

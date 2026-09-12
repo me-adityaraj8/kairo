@@ -4,9 +4,10 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import PixelPanel from "@/components/PixelPanel";
-import PixelButton from "@/components/PixelButton";
-import PixelInput from "@/components/PixelInput";
+import { motion } from "framer-motion";
+import GameButton from "@/components/game/GameButton";
+import GameInput from "@/components/game/GameInput";
+import { SPRING } from "@/lib/motion";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -23,12 +24,7 @@ export default function LoginForm() {
     setError("");
     setPending(true);
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
+    const res = await signIn("credentials", { email, password, redirect: false });
     setPending(false);
 
     if (res?.error) {
@@ -40,12 +36,24 @@ export default function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center font-pixel text-base text-gold">Kairo</h1>
-        <PixelPanel title="Enter the Tavern">
+    <main className="flex min-h-screen items-center justify-center px-5 py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SPRING.subtle}
+        className="w-full max-w-sm"
+      >
+        <div className="mb-7 text-center">
+          <span aria-hidden="true" className="inline-block animate-float text-4xl">
+            🗝️
+          </span>
+          <h1 className="mt-3 font-display text-2xl text-gold text-glow-gold">Kairo</h1>
+          <p className="mt-1.5 text-sm text-dim">Your quest log is waiting.</p>
+        </div>
+
+        <div className="panel p-5">
           <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-            <PixelInput
+            <GameInput
               label="Email"
               type="email"
               value={email}
@@ -53,7 +61,7 @@ export default function LoginForm() {
               autoComplete="email"
               required
             />
-            <PixelInput
+            <GameInput
               label="Password"
               type="password"
               value={password}
@@ -62,22 +70,23 @@ export default function LoginForm() {
               required
             />
             {error && (
-              <p role="alert" className="font-mono text-xs text-danger">
+              <p role="alert" className="text-xs font-medium text-danger">
                 {error}
               </p>
             )}
-            <PixelButton type="submit" disabled={pending}>
-              {pending ? "Entering..." : "Sign In"}
-            </PixelButton>
+            <GameButton type="submit" variant="gold" disabled={pending} className="mt-1 w-full">
+              {pending ? "Entering…" : "Continue"}
+            </GameButton>
           </form>
-        </PixelPanel>
-        <p className="mt-4 text-center font-mono text-xs text-muted">
+        </div>
+
+        <p className="mt-5 text-center text-sm text-dim">
           No adventurer yet?{" "}
-          <Link href="/register" className="text-gold underline">
+          <Link href="/register" className="font-semibold text-gold hover:underline">
             Create one
           </Link>
         </p>
-      </div>
+      </motion.div>
     </main>
   );
 }

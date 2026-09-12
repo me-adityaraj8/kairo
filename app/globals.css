@@ -3,29 +3,112 @@
 @tailwind utilities;
 
 :root {
-  --bg: #1a1327;
-  --panel: #2d2140;
-  --border: #4a3a63;
-  --gold: #f5c542;
-  --xp: #4fd1c5;
-  --danger: #e05263;
-  --text: #e8e3f0;
-  --muted: #9a8fb0;
+  --bg-deep: #080512;
+  --bg-mid: #140e24;
+  --bg-raise: #1c1433;
+
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-strong: rgba(255, 255, 255, 0.08);
+  --stroke: rgba(255, 255, 255, 0.1);
+  --stroke-strong: rgba(255, 255, 255, 0.18);
+
+  --text: #f2eefb;
+  --text-dim: #b3a8cd;
+
+  --gold: #ffc542;
+  --gold-deep: #ff972e;
+  --xp: #4ce6cf;
+  --xp-deep: #17b4c6;
+  --danger: #ff5c74;
+  --violet: #b15cff;
+  --blue: #4c9ffe;
+
+  --common: #93a4bd;
+  --rare: #4c9ffe;
+  --epic: #b15cff;
+  --legendary: #ffb02e;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   color: var(--text);
-  background-color: var(--bg);
-  background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.35) 100%);
-  background-attachment: fixed;
-  font-family: var(--font-mono), monospace;
+  background-color: var(--bg-deep);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6, button {
-  font-family: var(--font-pixel), monospace;
+/* Layered atmosphere: warm horizon low, violet bloom high, vignette over both. */
+.atmosphere::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(120% 80% at 50% 110%, rgba(255, 157, 46, 0.13) 0%, transparent 55%),
+    radial-gradient(90% 70% at 15% -10%, rgba(177, 92, 255, 0.2) 0%, transparent 60%),
+    radial-gradient(80% 60% at 85% 0%, rgba(76, 159, 254, 0.14) 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-deep) 70%);
+}
+
+.atmosphere::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(100% 100% at 50% 45%, transparent 35%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+@layer components {
+  .panel {
+    background: linear-gradient(180deg, var(--surface-strong) 0%, var(--surface) 100%);
+    border: 1px solid var(--stroke);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
+      0 18px 40px -22px rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .panel-flat {
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    border-radius: 1rem;
+  }
+}
+
+@layer utilities {
+  .text-glow-gold {
+    text-shadow: 0 0 18px rgba(255, 197, 66, 0.55);
+  }
+  .text-glow-xp {
+    text-shadow: 0 0 18px rgba(76, 230, 207, 0.5);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
 }
 
 *:focus-visible {
   outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

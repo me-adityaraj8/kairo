@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, IBM_Plex_Mono } from "next/font/google";
+import { Bungee, Outfit } from "next/font/google";
 import Providers from "@/components/Providers";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
-const pixelFont = Press_Start_2P({
+const displayFont = Bungee({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-pixel",
+  variable: "--font-display",
   display: "swap",
 });
 
-const monoFont = IBM_Plex_Mono({
+const sansFont = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-mono",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${pixelFont.variable} ${monoFont.variable}`}>
+      <body className={`atmosphere ${displayFont.variable} ${sansFont.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

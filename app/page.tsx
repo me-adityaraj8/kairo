@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PixelPanel from "@/components/PixelPanel";
 
 export const metadata: Metadata = {
   title: "Kairo - Turn Your To-Do List Into a Quest Log",
@@ -10,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Kairo - Turn Your To-Do List Into a Quest Log",
     description:
-      "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a 16-bit dungeon crawler.",
+      "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a game.",
     type: "website",
     siteName: "Kairo",
   },
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kairo - Turn Your To-Do List Into a Quest Log",
     description:
-      "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a 16-bit dungeon crawler.",
+      "Complete real tasks, earn XP and gold, level up your character. A habit tracker that plays like a game.",
   },
 };
 
@@ -35,89 +34,106 @@ const jsonLd = {
 
 const features = [
   {
-    title: "Quests, Not Chores",
-    body: "Post a task, tag it to an attribute, pick a difficulty. Finishing it pays out XP and gold based on how hard it was - EPIC quests are worth fifteen times an easy one.",
+    icon: "⚔️",
+    tint: "var(--epic)",
+    title: "Quests, not chores",
+    body: "Tag a task to an attribute and pick a difficulty. Legendary quests pay fifteen times what a common one does.",
   },
   {
-    title: "Four Attributes",
-    body: "Intellect, Strength, Discipline and Vitality each level independently. Your quest history becomes a visible record of where you actually spend your effort.",
+    icon: "🧬",
+    tint: "var(--blue)",
+    title: "Four attributes",
+    body: "Intellect, Strength, Discipline and Vitality level independently, so your log shows where your effort actually went.",
   },
   {
-    title: "Streaks That Pay",
-    body: "Complete at least one quest a day to keep your streak. Every consecutive day adds a 5% XP bonus, up to 1.5x at ten days. Miss a day and it resets.",
+    icon: "🔥",
+    tint: "var(--gold)",
+    title: "Streaks that pay",
+    body: "Every consecutive day adds a 5% XP bonus, up to 1.5x at ten days. Miss a day and it starts over.",
   },
 ];
 
 export default function LandingPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-20">
-        <header className="mb-16 text-center">
-          <h1 className="font-pixel text-xl leading-relaxed text-gold sm:text-3xl">Kairo</h1>
-          <p className="mx-auto mt-6 max-w-xl font-mono text-sm leading-relaxed text-text sm:text-base">
-            Your to-do list already decides how your day goes. This one keeps score.
-            Finish real tasks, earn XP and gold, and watch a character sheet fill in
-            behind the work you were going to do anyway.
+      <div className="mx-auto w-full max-w-5xl px-5 py-14 sm:py-20">
+        <header className="text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-dim">
+            <span aria-hidden="true">✦</span> Productivity, played
+          </span>
+
+          <h1 className="mt-6 font-display text-3xl leading-tight text-text sm:text-5xl">
+            Your to-do list,
+            <br />
+            <span className="text-gold text-glow-gold">but it keeps score</span>
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-dim sm:text-base">
+            Kairo turns the things you were going to do anyway into quests. Finish them, earn XP and
+            gold, and watch a character sheet fill in behind your real life.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/register"
-              className="border-[3px] border-gold bg-gold px-6 py-3 font-pixel text-[10px] uppercase tracking-wider text-bg transition-transform active:translate-y-[2px] hover:bg-[#ffd766]"
+              className="rounded-xl bg-gradient-to-b from-[#ffd469] to-[#ff972e] px-6 py-3 text-sm font-bold text-deep shadow-[0_10px_30px_-10px_rgba(255,180,60,.9)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5"
             >
-              Create Your Adventurer
+              Create your adventurer
             </Link>
             <Link
               href="/login"
-              className="border-[3px] border-border px-6 py-3 font-pixel text-[10px] uppercase tracking-wider text-text transition-transform active:translate-y-[2px] hover:bg-border/40"
+              className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-text transition-colors hover:bg-white/10"
             >
-              Sign In
+              Sign in
             </Link>
           </div>
         </header>
 
-        <main>
+        <main className="mt-16">
           <h2 className="sr-only">How it works</h2>
-          <section className="grid gap-6 md:grid-cols-3">
+
+          <section className="grid gap-4 md:grid-cols-3">
             {features.map((feature) => (
-              <PixelPanel key={feature.title} title={feature.title}>
-                <p className="font-mono text-xs leading-relaxed text-text">{feature.body}</p>
-              </PixelPanel>
+              <article key={feature.title} className="panel p-5">
+                <span
+                  aria-hidden="true"
+                  className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 text-xl"
+                  style={{ background: `color-mix(in srgb, ${feature.tint} 18%, transparent)` }}
+                >
+                  {feature.icon}
+                </span>
+                <h3 className="mt-4 text-base font-bold text-text">{feature.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-dim">{feature.body}</p>
+              </article>
             ))}
           </section>
 
-          <section className="mt-16">
-            <PixelPanel title="The Loop">
-              <ol className="flex flex-col gap-3 font-mono text-xs leading-relaxed text-text">
-                <li>
-                  <span className="text-gold">1.</span> Post a quest and tag it to one of
-                  your four attributes.
+          <section className="panel mt-6 p-6 sm:p-8">
+            <h3 className="font-display text-base text-gold">The loop</h3>
+            <ol className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                "Post a quest and tag it to an attribute.",
+                "Do the thing in real life, then mark it done.",
+                "Collect XP and gold. Level the account and that attribute.",
+                "Spend gold in the shop. Come back tomorrow for the streak.",
+              ].map((step, i) => (
+                <li key={i} className="flex gap-3">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gold/15 font-display text-[11px] text-gold">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm leading-relaxed text-dim">{step}</p>
                 </li>
-                <li>
-                  <span className="text-gold">2.</span> Do the thing in real life, then mark
-                  it complete.
-                </li>
-                <li>
-                  <span className="text-gold">3.</span> Collect XP and gold. Level up the
-                  account and that attribute.
-                </li>
-                <li>
-                  <span className="text-gold">4.</span> Spend gold in the tavern shop. Come
-                  back tomorrow to keep the streak.
-                </li>
-              </ol>
-            </PixelPanel>
+              ))}
+            </ol>
           </section>
         </main>
 
-        <footer className="mt-16 text-center">
-          <p className="font-mono text-xs text-muted">
-            Every number is calculated on the server. No amount of clicking the wrong
-            button will forge you a level.
+        <footer className="mt-14 text-center">
+          <p className="text-xs text-dim">
+            Every number is calculated on the server. No amount of clicking the wrong button will forge
+            you a level.
           </p>
         </footer>
       </div>

@@ -5,7 +5,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
 };
 
-const PixelInput = forwardRef<HTMLInputElement, Props>(function PixelInput(
+const GameInput = forwardRef<HTMLInputElement, Props>(function GameInput(
   { label, error, id, className = "", ...props },
   ref
 ) {
@@ -14,8 +14,8 @@ const PixelInput = forwardRef<HTMLInputElement, Props>(function PixelInput(
   const errorId = `${inputId}-error`;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="font-mono text-xs text-muted">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={inputId} className="text-xs font-medium uppercase tracking-wider text-dim">
         {label}
       </label>
       <input
@@ -23,12 +23,13 @@ const PixelInput = forwardRef<HTMLInputElement, Props>(function PixelInput(
         id={inputId}
         aria-invalid={!!error}
         aria-describedby={error ? errorId : undefined}
-        className={`border-[3px] border-border bg-bg px-3 py-2 font-mono text-sm text-text
-          placeholder:text-muted focus-visible:border-gold ${error ? "border-danger" : ""} ${className}`}
+        className={`w-full rounded-xl border bg-black/30 px-4 py-3 text-[15px] text-text
+          placeholder:text-dim/60 transition-colors focus:bg-black/40
+          ${error ? "border-danger/70" : "border-white/12 focus:border-xp/60"} ${className}`}
         {...props}
       />
       {error && (
-        <p id={errorId} className="font-mono text-xs text-danger">
+        <p id={errorId} className="text-xs font-medium text-danger">
           {error}
         </p>
       )}
@@ -36,4 +37,4 @@ const PixelInput = forwardRef<HTMLInputElement, Props>(function PixelInput(
   );
 });
 
-export default PixelInput;
+export default GameInput;
