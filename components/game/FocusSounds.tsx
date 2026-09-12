@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { AMBIENTS, AmbientId } from "@/lib/ambient";
+import { AMBIENTS } from "@/lib/ambient";
 import { useAudio } from "./AudioProvider";
 import { SPRING } from "@/lib/motion";
 
