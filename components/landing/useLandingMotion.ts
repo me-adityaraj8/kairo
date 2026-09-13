@@ -241,23 +241,86 @@ export function useLandingMotion(enabled: boolean) {
 
         /* ------------------------- the loop: pinned, steps light up */
         const steps = gsap.utils.toArray<HTMLElement>("[data-loop-step]");
+        const rider = document.querySelector<HTMLElement>("[data-loop-rider]");
+        const counter = document.querySelector<HTMLElement>("[data-loop-count]");
+
         if (steps.length) {
+          /*
+           * The dimmed starting state is applied here rather than in the
+           * markup: without JS, or under reduced motion, the whole sequence
+           * should simply be readable instead of stuck at a quarter opacity.
+           */
+          gsap.set(steps, { opacity: 0.25 });
+          gsap.set("[data-loop-chip]", { opacity: 0, y: 10, scale: 0.9 });
+
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: "[data-loop]",
               start: "top top",
-              end: () => `+=${steps.length * 260}`,
+              end: () => `+=${steps.length * 320}`,
               pin: true,
               scrub: 0.6,
               anticipatePin: 1,
             },
           });
-          steps.forEach((step) => {
-            tl.to(step, { opacity: 1, x: 0, duration: 1 }).to(
-              step.querySelector("[data-loop-rail]"),
-              { scaleX: 1, duration: 1 },
-              "<"
-            );
+
+          // the light climbs the spine over the whole sequence
+          tl.fromTo(
+            "[data-loop-spine]",
+            { scaleY: 0 },
+            { scaleY: 1, duration: steps.length, ease: "none" },
+            0
+          );
+
+          // orbs drift, so the frame is never completely still
+          tl.to("[data-loop-orb]", { yPercent: -18, duration: steps.length, ease: "none" }, 0);
+
+          steps.forEach((step, i) => {
+            const at = i;
+            const node = step.querySelector("[data-loop-node]");
+            const chips = step.querySelectorAll("[data-loop-chip]");
+
+            tl.to(step, { opacity: 1, duration: 0.6 }, at)
+              .fromTo(
+                node,
+                { scale: 0.6, rotate: -12 },
+                { scale: 1, rotate: 0, duration: 0.6, ease: "back.out(2.2)" },
+                at
+              )
+              .to(step.querySelector("[data-loop-rail]"), { scaleX: 1, duration: 0.8 }, at)
+              .to(
+                chips,
+                { y: 0, opacity: 1, scale: 1, duration: 0.45, stagger: 0.06, ease: "back.out(2)" },
+                at + 0.15
+              );
+
+            // the companion hops to the step that just lit up
+            if (rider) {
+              tl.to(
+                rider,
+                {
+                  y: () => step.offsetTop,
+                  duration: 0.6,
+                  ease: "power2.inOut",
+                },
+                at
+              );
+            }
+
+            if (counter) {
+              tl.call(
+                () => {
+                  counter.textContent = `0${i + 1} / 0${steps.length}`;
+                },
+                undefined,
+                at
+              );
+            }
+
+            // steps already passed dim back down, so attention stays on one
+            if (i > 0) {
+              tl.to(steps[i - 1], { opacity: 0.35, duration: 0.6 }, at);
+            }
           });
         }
 

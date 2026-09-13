@@ -43,10 +43,38 @@ const FEATURES = [
 ];
 
 const LOOP = [
-  { n: "01", t: "Post a quest", d: "Name a real task, tag it to an attribute, pick a difficulty." },
-  { n: "02", t: "Do the thing", d: "In real life. Kairo is the scoreboard, not the work." },
-  { n: "03", t: "Collect", d: "XP, gold and attribute progress, multiplied by your streak and combo." },
-  { n: "04", t: "Come back", d: "Chests, challenges and a companion that grows on what you actually did." },
+  {
+    n: "01",
+    icon: "📜",
+    tint: "#b15cff",
+    t: "Post a quest",
+    d: "Name a real task, tag it to an attribute, pick a difficulty.",
+    chips: ["Common", "Rare", "Epic", "Legendary"],
+  },
+  {
+    n: "02",
+    icon: "⚔️",
+    tint: "#4c9ffe",
+    t: "Do the thing",
+    d: "In real life. Kairo is the scoreboard, not the work.",
+    chips: ["Away from the app"],
+  },
+  {
+    n: "03",
+    icon: "✨",
+    tint: "#4ce6cf",
+    t: "Collect",
+    d: "XP, gold and attribute progress, multiplied by your streak and combo.",
+    chips: ["+XP", "+Gold", "×Streak", "×Combo"],
+  },
+  {
+    n: "04",
+    icon: "🎁",
+    tint: "#ffb02e",
+    t: "Come back",
+    d: "Chests, challenges and a companion that grows on what you actually did.",
+    chips: ["Chest", "Challenge", "Bond"],
+  },
 ];
 
 const FAQ = [
@@ -205,28 +233,104 @@ export default function LandingExperience() {
       </section>
 
       {/* ------------------------------------------------------------ loop */}
-      <section data-loop className="relative flex min-h-screen items-center px-5">
-        <div className="mx-auto w-full max-w-4xl">
-          <h2 className="font-display text-xl text-gold text-glow-gold sm:text-2xl">The loop</h2>
-          <div className="mt-8 flex flex-col gap-6">
-            {LOOP.map((s) => (
-              <div
-                key={s.n}
-                data-loop-step
-                className="flex items-start gap-5 opacity-25"
-                style={{ transform: "translateX(-24px)" }}
-              >
-                <span className="font-display text-2xl text-gold sm:text-3xl">{s.n}</span>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-base text-text sm:text-lg">{s.t}</h3>
-                  <p className="mt-1 text-[13px] leading-relaxed text-dim sm:text-sm">{s.d}</p>
+      <section data-loop className="relative flex min-h-screen items-center overflow-hidden px-5">
+        {/* section ambience, so the pinned frame is never bare */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div
+            data-loop-orb
+            className="absolute left-[8%] top-[18%] h-72 w-72 rounded-full blur-3xl"
+            style={{ background: "radial-gradient(circle, rgba(124,58,237,.20), transparent 70%)" }}
+          />
+          <div
+            data-loop-orb
+            className="absolute right-[10%] bottom-[14%] h-80 w-80 rounded-full blur-3xl"
+            style={{ background: "radial-gradient(circle, rgba(255,160,50,.14), transparent 70%)" }}
+          />
+        </div>
+
+        <div className="relative mx-auto w-full max-w-4xl py-16">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="font-display text-xl text-gold text-glow-gold sm:text-2xl">The loop</h2>
+            <span
+              data-loop-count
+              className="font-display text-[11px] uppercase tracking-[0.2em] text-dim"
+            >
+              01 / 04
+            </span>
+          </div>
+
+          <div className="relative mt-9 pl-12 sm:pl-16">
+            {/* the spine, and the light that climbs it */}
+            <span
+              aria-hidden="true"
+              className="absolute left-[19px] top-2 bottom-2 w-px bg-white/10 sm:left-[27px]"
+            />
+            <span
+              data-loop-spine
+              aria-hidden="true"
+              className="absolute left-[19px] top-2 w-px origin-top scale-y-0 bg-gradient-to-b from-gold via-epic to-transparent sm:left-[27px]"
+              style={{ bottom: "0.5rem" }}
+            />
+            {/* the companion rides the spine */}
+            <span
+              data-loop-rider
+              aria-hidden="true"
+              className="absolute left-0 top-0 grid h-10 w-10 place-items-center rounded-full sm:left-[8px]"
+              style={{ background: "radial-gradient(circle, rgba(255,176,46,.35), transparent 70%)" }}
+            >
+              <Creature species="fox" size={38} />
+            </span>
+
+            <div className="flex flex-col gap-9 sm:gap-11">
+              {LOOP.map((step) => (
+                <div key={step.n} data-loop-step className="relative">
+                  <span
+                    data-loop-node
+                    aria-hidden="true"
+                    className="absolute -left-12 top-0 grid h-10 w-10 place-items-center rounded-xl border text-base sm:-left-16"
+                    style={{
+                      borderColor: `${step.tint}55`,
+                      background: `${step.tint}18`,
+                    }}
+                  >
+                    {step.icon}
+                  </span>
+
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-display text-lg sm:text-xl" style={{ color: step.tint }}>
+                      {step.n}
+                    </span>
+                    <h3 className="font-display text-base text-text sm:text-lg">{step.t}</h3>
+                  </div>
+                  <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-dim sm:text-sm">
+                    {step.d}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {step.chips.map((c) => (
+                      <span
+                        key={c}
+                        data-loop-chip
+                        className="rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]"
+                        style={{
+                          borderColor: `${step.tint}44`,
+                          background: `${step.tint}12`,
+                          color: step.tint,
+                        }}
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+
                   <span
                     data-loop-rail
-                    className="mt-3 block h-px w-full origin-left scale-x-0 bg-gradient-to-r from-gold/70 to-transparent"
+                    className="mt-4 block h-px w-full origin-left scale-x-0"
+                    style={{ background: `linear-gradient(90deg, ${step.tint}aa, transparent)` }}
                   />
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
