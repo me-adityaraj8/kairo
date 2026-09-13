@@ -77,6 +77,12 @@ const LOOP = [
   },
 ];
 
+const CREDITS = [
+  { name: "Aditya Raj", tint: "rgba(192,132,252,.45)" },
+  { name: "Naman Singh", tint: "rgba(76,159,254,.45)" },
+  { name: "Varun Sharma", tint: "rgba(255,176,46,.45)" },
+];
+
 const FAQ = [
   {
     q: "Is it free?",
@@ -408,16 +414,77 @@ export default function LandingExperience() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-xs text-dim">
-          <Link href="/privacy" className="hover:text-text hover:underline">
-            Privacy
-          </Link>
-          <span className="mx-2">·</span>
-          <Link href="/terms" className="hover:text-text hover:underline">
-            Terms
-          </Link>
-        </p>
       </section>
+
+      {/* ---------------------------------------------------------- footer */}
+      <footer data-footer className="relative overflow-hidden px-5 pb-14">
+        <div className="mx-auto w-full max-w-3xl">
+          {/* a line that draws itself across as the footer arrives */}
+          <span
+            data-footer-rule
+            aria-hidden="true"
+            className="block h-px w-full origin-center scale-x-0"
+            style={{
+              background:
+                "linear-gradient(90deg,transparent,rgba(192,132,252,.55),rgba(255,180,60,.55),transparent)",
+            }}
+          />
+
+          <div className="mt-10 flex flex-col items-center text-center">
+            <span data-footer-mark className="inline-block">
+              <KairoMark size={38} animated={false} />
+            </span>
+
+            <p className="mt-5 text-sm text-dim">
+              Made with{" "}
+              <span
+                data-footer-heart
+                aria-label="love"
+                role="img"
+                className="inline-block align-middle text-base"
+              >
+                ❤️
+              </span>{" "}
+              by
+            </p>
+
+            <ul data-footer-names className="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-2">
+              {CREDITS.map((person, i) => (
+                <li key={person.name} className="flex items-center gap-2">
+                  <span
+                    data-footer-name
+                    data-magnetic
+                    className="relative cursor-default font-display text-[15px] text-text transition-colors hover:text-gold sm:text-base"
+                  >
+                    <span
+                      aria-hidden="true"
+                      data-footer-name-glow
+                      className="pointer-events-none absolute -inset-x-3 -inset-y-2 rounded-lg opacity-0 blur-lg"
+                      style={{ background: person.tint }}
+                    />
+                    <span className="relative">{person.name}</span>
+                  </span>
+                  {i < CREDITS.length - 1 && (
+                    <span aria-hidden="true" className="text-dim/50">
+                      ·
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-7 text-xs text-dim">
+              <Link href="/privacy" className="hover:text-text hover:underline">
+                Privacy
+              </Link>
+              <span className="mx-2">·</span>
+              <Link href="/terms" className="hover:text-text hover:underline">
+                Terms
+              </Link>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

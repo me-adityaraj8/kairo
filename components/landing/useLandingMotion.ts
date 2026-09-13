@@ -32,7 +32,9 @@ export function useLandingMotion(enabled: boolean) {
        * in here throws, they would stay hidden and the page would look empty,
        * so failure puts them back rather than leaving a blank hero.
        */
-      const HIDDEN = "[data-hero-mark],[data-hero-line],[data-hero-sub],[data-hero-cta],[data-hero-char],[data-reveal],[data-reveal-stagger] > *";
+      const HIDDEN =
+        "[data-hero-mark],[data-hero-line],[data-hero-sub],[data-hero-cta],[data-hero-char]," +
+        "[data-reveal],[data-reveal-stagger] > *,[data-footer-mark],[data-footer-name]";
       const forceVisible = () => {
         document.querySelectorAll<HTMLElement>(HIDDEN).forEach((el) => {
           el.style.opacity = "1";
@@ -516,6 +518,61 @@ export function useLandingMotion(enabled: boolean) {
           immediateRender: false,
           scrollTrigger: { trigger: "[data-hero]", start: "50% top", end: "bottom top", scrub: 0.8 },
         });
+
+        /* ------------------------------------------------------ footer */
+        if (document.querySelector("[data-footer]")) {
+          gsap
+            .timeline({
+              scrollTrigger: { trigger: "[data-footer]", start: "top 88%", once: true },
+            })
+            .fromTo(
+              "[data-footer-rule]",
+              { scaleX: 0 },
+              { scaleX: 1, duration: 1.1, ease: "power3.inOut" }
+            )
+            .from(
+              "[data-footer-mark]",
+              { scale: 0.5, rotate: -25, opacity: 0, duration: 0.8, ease: "back.out(1.8)" },
+              "-=0.6"
+            )
+            .from(
+              "[data-footer-name]",
+              {
+                y: 22,
+                opacity: 0,
+                duration: 0.65,
+                stagger: 0.12,
+                ease: "back.out(1.6)",
+              },
+              "-=0.4"
+            );
+
+          // a heartbeat rather than a pulse: two quick beats, then a rest
+          gsap
+            .timeline({ repeat: -1, repeatDelay: 0.9 })
+            .to("[data-footer-heart]", { scale: 1.3, duration: 0.16, ease: "power2.out" })
+            .to("[data-footer-heart]", { scale: 1, duration: 0.18, ease: "power2.in" })
+            .to("[data-footer-heart]", { scale: 1.22, duration: 0.14, ease: "power2.out" })
+            .to("[data-footer-heart]", { scale: 1, duration: 0.24, ease: "power2.in" });
+
+          gsap.utils.toArray<HTMLElement>("[data-footer-name]").forEach((name) => {
+            const glow = name.querySelector("[data-footer-name-glow]");
+            const enter = () => {
+              gsap.to(name, { y: -4, duration: 0.35, ease: "back.out(2.5)" });
+              if (glow) gsap.to(glow, { opacity: 1, duration: 0.35 });
+            };
+            const leave = () => {
+              gsap.to(name, { y: 0, duration: 0.4, ease: "power3.out" });
+              if (glow) gsap.to(glow, { opacity: 0, duration: 0.4 });
+            };
+            name.addEventListener("pointerenter", enter);
+            name.addEventListener("pointerleave", leave);
+            teardown.push(() => {
+              name.removeEventListener("pointerenter", enter);
+              name.removeEventListener("pointerleave", leave);
+            });
+          });
+        }
 
         /* --------------------------------------------- light trails */
         gsap.to("[data-trail]", {
