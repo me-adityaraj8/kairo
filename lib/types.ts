@@ -8,6 +8,8 @@ export type Quest = {
   attributeName: string;
   done: boolean;
   completedAt: string | null;
+  minutes?: number | null;
+  dueOn?: string | null;
 };
 
 export type CharacterAttribute = {

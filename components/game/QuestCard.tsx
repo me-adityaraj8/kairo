@@ -23,6 +23,12 @@ const QuestCard = forwardRef<HTMLLIElement, QuestCardProps>(function QuestCard(
   const rarity = rarityOf(quest.difficulty);
   const reward = REWARD_PREVIEW[quest.difficulty];
 
+  const due = quest.dueOn ? new Date(quest.dueOn) : null;
+  const overdue = !!due && due.getTime() < Date.now();
+  const dueLabel = due
+    ? due.toLocaleDateString(undefined, { day: "numeric", month: "short" })
+    : null;
+
   if (quest.done) {
     return (
       <motion.li
@@ -107,6 +113,25 @@ const QuestCard = forwardRef<HTMLLIElement, QuestCardProps>(function QuestCard(
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <Reward tint="var(--xp)" bg="rgba(76,230,207,.14)" label={`+${reward.xp} XP`} />
             <Reward tint="var(--gold)" bg="rgba(255,197,66,.14)" label={`+${reward.gold} Gold`} />
+            {quest.minutes ? (
+              <Reward
+                tint="var(--text-dim)"
+                bg="rgba(255,255,255,.05)"
+                label={`~${quest.minutes} min`}
+              />
+            ) : null}
+            {dueLabel ? (
+              <span
+                title={overdue ? "Past its due date" : `Due ${dueLabel}`}
+                className="rounded-md px-1.5 py-0.5 text-[10px] font-bold"
+                style={{
+                  color: overdue ? "var(--danger)" : "var(--text-dim)",
+                  background: overdue ? "rgba(255,90,110,.14)" : "rgba(255,255,255,.05)",
+                }}
+              >
+                {overdue ? `Overdue · ${dueLabel}` : `Due ${dueLabel}`}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

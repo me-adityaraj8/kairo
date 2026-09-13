@@ -18,12 +18,20 @@ export default function NewQuestModal({
 }: {
   attributes: CharacterAttribute[];
   onClose: () => void;
-  onCreate: (input: { title: string; attributeId: string; difficulty: Difficulty }) => Promise<void>;
+  onCreate: (input: {
+    title: string;
+    attributeId: string;
+    difficulty: Difficulty;
+    minutes: number | null;
+    dueOn: string | null;
+  }) => Promise<void>;
 }) {
   const reduceMotion = useReducedMotion();
   const [title, setTitle] = useState("");
   const [attributeId, setAttributeId] = useState(attributes[0]?.id ?? "");
   const [difficulty, setDifficulty] = useState<Difficulty>("NORMAL");
+  const [minutes, setMinutes] = useState("");
+  const [dueOn, setDueOn] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -72,7 +80,16 @@ export default function NewQuestModal({
     }
     setPending(true);
     try {
-      await onCreate({ title: title.trim(), attributeId, difficulty });
+      const mins = minutes.trim() ? Number(minutes) : null;
+      await onCreate({
+        title: title.trim(),
+        attributeId,
+        difficulty,
+        minutes: mins && mins > 0 ? mins : null,
+        // Treat the picked day as ending at local midnight, so a quest due
+        // "today" is not already overdue the moment it is posted.
+        dueOn: dueOn ? new Date(`${dueOn}T23:59:59`).toISOString() : null,
+      });
       onClose();
     } catch {
       setError("Could not post the quest");
@@ -167,6 +184,45 @@ export default function NewQuestModal({
               })}
             </div>
           </fieldset>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-dim">
+                Minutes <span className="text-white/30">(opt.)</span>
+              </span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={600}
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+                placeholder="25"
+                className="w-full rounded-xl border border-white/12 bg-white/[0.04] px-3 py-2.5 text-sm text-text
+                  placeholder:text-white/25 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-dim">
+                Due <span className="text-white/30">(opt.)</span>
+              </span>
+              <input
+                type="date"
+                value={dueOn}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => setDueOn(e.target.value)}
+                className="w-full rounded-xl border border-white/12 bg-white/[0.04] px-3 py-2.5 text-sm text-text
+                  focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/25
+                  [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:invert"
+              />
+            </label>
+          </div>
+
+          <p className="-mt-1 text-[10px] leading-relaxed text-dim">
+            Minutes is your own estimate and the due date is a reminder. Neither changes the payout
+            — difficulty decides that, on the server.
+          </p>
 
           <div className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-2.5">
             <span className="text-[11px] font-bold text-xp">+{reward.xp} XP</span>

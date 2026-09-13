@@ -139,6 +139,10 @@ model Quest {
   difficulty  Difficulty
   done        Boolean    @default(false)
   completedAt DateTime?
+  // Optional planning fields. Neither affects the reward — difficulty alone
+  // decides that, and it is read from this row on the server.
+  minutes     Int?
+  dueOn       DateTime?
   createdAt   DateTime   @default(now())
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   attribute   Attribute  @relation(fields: [attributeId], references: [id])

@@ -144,7 +144,13 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
-  async function createQuest(input: { title: string; attributeId: string; difficulty: Difficulty }) {
+  async function createQuest(input: {
+    title: string;
+    attributeId: string;
+    difficulty: Difficulty;
+    minutes: number | null;
+    dueOn: string | null;
+  }) {
     const res = await fetch("/api/quests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

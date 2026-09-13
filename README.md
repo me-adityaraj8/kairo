@@ -75,7 +75,7 @@ Every value in that chain is stored in Postgres and calculated on the server. Th
 
 | Area | What it does |
 |---|---|
-| **Quests** | Create, list and delete. Four difficulty tiers shown as Common / Rare / Epic / Legendary, each tagged to one attribute. |
+| **Quests** | Create, list and delete. Four difficulty tiers shown as Common / Rare / Epic / Legendary, each tagged to one attribute. Optional time estimate and due date, with overdue quests flagged on the card. |
 | **Progression** | `XP_FOR_LEVEL(n) = 100 × n^1.5`. Account and per-attribute levels track separately. |
 | **Combo** | Consecutive completions inside a 30-minute window multiply XP: ×1.2 at 2, ×1.5 at 3, ×2 at 5, ×3 at 10. |
 | **Streak** | Daily streak with a separate XP bonus of 5% per day, capped at ×1.5. Longest streak retained. |

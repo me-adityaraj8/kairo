@@ -82,6 +82,8 @@ export async function GET() {
         attributeName: q.attribute.name,
         done: q.done,
         completedAt: q.completedAt,
+        minutes: q.minutes,
+        dueOn: q.dueOn,
       })),
       companion: {
         name: companion.name,

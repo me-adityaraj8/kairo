@@ -9,6 +9,10 @@ const createSchema = z.object({
   title: z.string().trim().min(1).max(120),
   attributeId: z.string().min(1),
   difficulty: z.enum(["EASY", "NORMAL", "HARD", "EPIC"]),
+  // Planning only. Rewards come from difficulty, which the completion
+  // endpoint reads off the stored row.
+  minutes: z.number().int().min(1).max(600).nullish(),
+  dueOn: z.string().datetime().nullish(),
 });
 
 export async function GET(req: Request) {
@@ -37,6 +41,8 @@ export async function GET(req: Request) {
         attributeName: q.attribute.name,
         done: q.done,
         completedAt: q.completedAt,
+        minutes: q.minutes,
+        dueOn: q.dueOn,
       })),
     });
   } catch (err) {
@@ -70,6 +76,8 @@ export async function POST(req: Request) {
         attributeId: attribute.id,
         title: parsed.data.title,
         difficulty: parsed.data.difficulty,
+        minutes: parsed.data.minutes ?? null,
+        dueOn: parsed.data.dueOn ? new Date(parsed.data.dueOn) : null,
       },
     });
 
@@ -83,6 +91,8 @@ export async function POST(req: Request) {
           attributeName: attribute.name,
           done: quest.done,
           completedAt: quest.completedAt,
+          minutes: quest.minutes,
+          dueOn: quest.dueOn,
         },
       },
       { status: 201 }
