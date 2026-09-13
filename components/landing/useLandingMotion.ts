@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { chirp } from "./chirp";
 
 /**
  * All of the landing page's motion, set up once on mount.
@@ -34,7 +35,7 @@ export function useLandingMotion(enabled: boolean) {
        */
       const HIDDEN =
         "[data-hero-mark],[data-hero-line],[data-hero-sub],[data-hero-cta],[data-hero-char]," +
-        "[data-reveal],[data-reveal-stagger] > *,[data-footer-mark],[data-footer-name]";
+        "[data-reveal],[data-reveal-stagger] > *,[data-footer-mark],[data-footer-name],[data-rail] > *";
       const forceVisible = () => {
         document.querySelectorAll<HTMLElement>(HIDDEN).forEach((el) => {
           el.style.opacity = "1";
@@ -400,6 +401,7 @@ export function useLandingMotion(enabled: boolean) {
         const heroChar = document.querySelector<HTMLElement>("[data-hero-char]");
         if (heroChar) {
           const poke = () => {
+            chirp();
             gsap
               .timeline()
               .to(heroChar, { scaleX: 1.12, scaleY: 0.88, duration: 0.12, ease: "power2.out" })
@@ -517,6 +519,46 @@ export function useLandingMotion(enabled: boolean) {
           ease: "none",
           immediateRender: false,
           scrollTrigger: { trigger: "[data-hero]", start: "50% top", end: "bottom top", scrub: 0.8 },
+        });
+
+        /* -------------------------------- companion rail, scroll-driven
+         * Vertical scroll walks the rail sideways, so the section reads as
+         * one continuous move. Dragging takes over while the pointer is
+         * down — the two would otherwise fight for scrollLeft.
+         */
+        const rail = document.querySelector<HTMLElement>("[data-rail]");
+        if (rail) {
+          gsap.from(rail.children, {
+            y: 60,
+            scale: 0.9,
+            opacity: 0,
+            rotateY: -12,
+            duration: 0.7,
+            stagger: 0.08,
+            ease: "back.out(1.5)",
+            scrollTrigger: { trigger: rail, start: "top 88%", once: true },
+          });
+
+          ScrollTrigger.create({
+            trigger: "[data-rail-section]",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
+            onUpdate: (self) => {
+              if (rail.dataset.dragging === "true") return;
+              const span = rail.scrollWidth - rail.clientWidth;
+              if (span <= 0) return;
+              // the middle stretch of the section maps onto the full rail
+              const t = gsap.utils.clamp(0, 1, (self.progress - 0.18) / 0.64);
+              rail.scrollLeft = span * t;
+            },
+          });
+        }
+
+        gsap.utils.toArray<HTMLElement>("[data-rail] > *").forEach((card) => {
+          const say = () => chirp();
+          card.addEventListener("pointerdown", say);
+          teardown.push(() => card.removeEventListener("pointerdown", say));
         });
 
         /* ------------------------------------------------------ footer */

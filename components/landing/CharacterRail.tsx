@@ -34,6 +34,8 @@ export default function CharacterRail({ reduced }: { reduced: boolean }) {
 
     const onDown = (e: PointerEvent) => {
       down = true;
+      // the scroll-driven sweep reads this and stands back while you drag
+      el.dataset.dragging = "true";
       startX = lastX = e.clientX;
       startScroll = el.scrollLeft;
       velocity = 0;
@@ -50,6 +52,7 @@ export default function CharacterRail({ reduced }: { reduced: boolean }) {
     const onUp = (e: PointerEvent) => {
       if (!down) return;
       down = false;
+      el.dataset.dragging = "false";
       el.releasePointerCapture(e.pointerId);
       el.style.cursor = "grab";
       raf = requestAnimationFrame(glide);
@@ -71,7 +74,8 @@ export default function CharacterRail({ reduced }: { reduced: boolean }) {
   return (
     <div
       ref={track}
-      className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      data-rail
+      className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       style={{ cursor: reduced ? undefined : "grab" }}
       role="list"
       aria-label="Companions you can choose"

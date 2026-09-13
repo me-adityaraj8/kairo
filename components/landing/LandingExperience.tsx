@@ -265,23 +265,23 @@ export default function LandingExperience() {
             </span>
           </div>
 
-          <div className="relative mt-9 pl-12 sm:pl-16">
+          <div className="relative mt-9 pl-14 sm:pl-[108px]">
             {/* the spine, and the light that climbs it */}
             <span
               aria-hidden="true"
-              className="absolute left-[19px] top-2 bottom-2 w-px bg-white/10 sm:left-[27px]"
+              className="absolute left-[20px] top-2 bottom-2 w-px bg-white/10 sm:left-[72px]"
             />
             <span
               data-loop-spine
               aria-hidden="true"
-              className="absolute left-[19px] top-2 w-px origin-top scale-y-0 bg-gradient-to-b from-gold via-epic to-transparent sm:left-[27px]"
+              className="absolute left-[20px] top-2 w-px origin-top scale-y-0 bg-gradient-to-b from-gold via-epic to-transparent sm:left-[72px]"
               style={{ bottom: "0.5rem" }}
             />
             {/* the companion rides the spine */}
             <span
               data-loop-rider
               aria-hidden="true"
-              className="absolute left-0 top-0 grid h-10 w-10 place-items-center rounded-full sm:left-[8px]"
+              className="absolute left-0 top-0 hidden h-10 w-10 place-items-center rounded-full sm:grid"
               style={{ background: "radial-gradient(circle, rgba(255,176,46,.35), transparent 70%)" }}
             >
               <Creature species="fox" size={38} />
@@ -293,7 +293,7 @@ export default function LandingExperience() {
                   <span
                     data-loop-node
                     aria-hidden="true"
-                    className="absolute -left-12 top-0 grid h-10 w-10 place-items-center rounded-xl border text-base sm:-left-16"
+                    className="absolute -left-14 top-0 grid h-10 w-10 place-items-center rounded-xl border text-base sm:-left-[56px]"
                     style={{
                       borderColor: `${step.tint}55`,
                       background: `${step.tint}18`,
@@ -342,14 +342,14 @@ export default function LandingExperience() {
       </section>
 
       {/* ------------------------------------------------------ characters */}
-      <section className="relative mx-auto w-full max-w-6xl px-5 py-20">
+      <section data-rail-section className="relative mx-auto w-full max-w-6xl px-5 py-20">
         <div data-reveal>
           <h2 className="font-display text-xl text-gold text-glow-gold sm:text-2xl">
             Pick a companion
           </h2>
           <p className="mt-2 max-w-xl text-sm text-dim">
             One of six, chosen when you sign up. It stands on your dashboard and reacts to what you
-            do — posting a quest, levelling, opening a chest. Drag to look around.
+            do — posting a quest, levelling, opening a chest. Scroll, or drag to look around.
           </p>
         </div>
         <div data-reveal className="mt-7">
