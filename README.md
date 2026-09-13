@@ -20,6 +20,31 @@ A productivity tracker built as a game. Real tasks become quests that pay out XP
 
 ---
 
+## Try it
+
+### **[kairo-olive-beta.vercel.app](https://kairo-olive-beta.vercel.app)**
+
+Sign up with any email and password — there's no verification step, so a throwaway address is fine. Google and GitHub sign-in work too.
+
+Pick a companion on the way in. It becomes your character, and it reacts to everything you do from then on.
+
+**The whole loop takes about a minute:**
+
+| | Do this | What to watch |
+|---|---|---|
+| 1 | Press `N`, name a real task, pick **Legendary** | Difficulty sets the payout — 10 XP for Common, 150 for Legendary |
+| 2 | Complete it | XP and gold fly to the counters in the header; the companion reacts |
+| 3 | Complete two more, quickly | The combo multiplier climbs — completions inside 30 minutes stack up to ×3 |
+| 4 | Open a chest from the header | Level-ups, streaks, achievements and challenges all drop them |
+| 5 | Press `B` and equip what you won | It appears on your character straight away |
+| 6 | Press `F`, open **Focus sounds**, layer rain and fireplace | Elapsed time is checked on the server, so the reward is real |
+
+Press `C` for the Legend screen — totals, activity heatmap and calendar. Press `H` for every shortcut.
+
+> Rewards are calculated server-side. The completion endpoint takes no request body at all, so nothing can be forged from the browser — see [Reward integrity](#reward-integrity).
+
+---
+
 ## The problem
 
 Habit and to-do apps fail for a structural reason: finishing a task returns nothing. A checkbox greys out and the loop ends there. There is no compounding reward, no reason to come back tomorrow, and no visible record of where effort actually went.
