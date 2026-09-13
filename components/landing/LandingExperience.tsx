@@ -5,6 +5,8 @@ import Link from "next/link";
 import Creature from "@/components/game/Creature";
 import DemoButton from "@/components/game/DemoButton";
 import KairoMark from "./KairoMark";
+import KairoWordmark from "./KairoWordmark";
+import CursorAura from "./CursorAura";
 import Backdrop from "./Backdrop";
 import CharacterRail from "./CharacterRail";
 import { useLandingMotion } from "./useLandingMotion";
@@ -72,6 +74,8 @@ export default function LandingExperience() {
 
   return (
     <div className="relative">
+      {!reduced && <CursorAura />}
+
       {/* ------------------------------------------------------------ hero */}
       <section
         data-hero
@@ -85,11 +89,16 @@ export default function LandingExperience() {
               <KairoMark size={84} animated={!reduced} />
             </div>
 
-            <p className="text-[11px] font-bold uppercase tracking-[0.42em] text-dim">
+            <KairoWordmark className="text-[clamp(3.4rem,13vw,9rem)]" />
+
+            <p
+              data-hero-tag
+              className="mt-3 text-[11px] font-bold uppercase tracking-[0.42em] text-dim"
+            >
               Productivity, played
             </p>
 
-            <h1 className="mt-4 font-display text-[clamp(2.2rem,7vw,4.6rem)] leading-[0.95] text-text">
+            <p className="mt-5 font-display text-[clamp(1.5rem,4.4vw,2.9rem)] leading-[1.02] text-text">
               <span className="block overflow-hidden">
                 <span data-hero-line className="block">
                   Your to-do list,
@@ -100,7 +109,7 @@ export default function LandingExperience() {
                   but it keeps score
                 </span>
               </span>
-            </h1>
+            </p>
 
             <p
               data-hero-sub
@@ -175,6 +184,7 @@ export default function LandingExperience() {
               />
               <div className="relative flex items-start justify-between">
                 <span
+                  data-card-icon
                   className="grid h-11 w-11 place-items-center rounded-xl text-xl"
                   style={{ background: `${f.tint}22`, boxShadow: `0 0 22px -8px ${f.tint}` }}
                 >
