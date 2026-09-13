@@ -654,8 +654,10 @@ export default function Creature({
           return (
             <motion.circle
               key={i}
-              cx={50 + Math.cos(angle) * r}
-              cy={46 + Math.sin(angle) * r * 0.8}
+              // Rounded because Math.cos/sin differ in their last bits between
+              // Node and the browser, which React reports as a hydration mismatch.
+              cx={+(50 + Math.cos(angle) * r).toFixed(3)}
+              cy={+(46 + Math.sin(angle) * r * 0.8).toFixed(3)}
               r={1.8}
               fill={p.glow}
               initial={{ opacity: 0, scale: 0 }}
