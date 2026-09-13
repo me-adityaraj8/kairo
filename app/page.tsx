@@ -142,6 +142,11 @@ export default function LandingPage() {
             Every number is calculated on the server. No amount of clicking the wrong button will forge
             you a level.
           </p>
+          <p className="mt-3 text-xs text-dim">
+            <Link href="/privacy" className="hover:text-text hover:underline">
+              Privacy
+            </Link>
+          </p>
         </footer>
       </div>
     </>
