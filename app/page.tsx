@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import DemoButton from "@/components/game/DemoButton";
 
 export const metadata: Metadata = {
   title: "Kairo - Turn Your To-Do List Into a Quest Log",
@@ -88,7 +89,13 @@ export default function LandingPage() {
             >
               Sign in
             </Link>
+            <DemoButton />
           </div>
+
+          <p className="mt-3 text-[12px] text-dim">
+            The demo is a real account with some progress already on it. No signup, nothing to
+            enter — it disappears after a day.
+          </p>
         </header>
 
         <main className="mt-16">

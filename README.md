@@ -24,7 +24,9 @@ A productivity tracker built as a game. Real tasks become quests that pay out XP
 
 ### **[kairo-olive-beta.vercel.app](https://kairo-olive-beta.vercel.app)**
 
-Sign up with any email and password — there's no verification step, so a throwaway address is fine. Google and GitHub sign-in work too.
+Hit **Try the demo** on the landing page and you're straight in — no signup, nothing to type. It hands you a real account already at level 4, with quests to finish, chests to open and a companion of its own, and clears itself up after a day.
+
+To keep progress instead, sign up with any email and password — there's no verification step, so a throwaway address is fine. Google and GitHub sign-in work too.
 
 Pick a companion on the way in. It becomes your character, and it reacts to everything you do from then on.
 
