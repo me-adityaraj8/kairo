@@ -14,7 +14,7 @@ A productivity tracker built as a game. Real tasks become quests that pay out XP
 [![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Deploy](https://img.shields.io/badge/Vercel-deployed-000?logo=vercel)](https://kairo-olive-beta.vercel.app)
 
-**[Live App](https://kairo-olive-beta.vercel.app)** · **[Demo Video](#)**
+**[Live App](https://kairo-olive-beta.vercel.app)** · **[Demo Video](docs/kairo-demo.mp4)**
 
 </div>
 
@@ -499,6 +499,13 @@ Verified manually against the deployed instance and a local database:
 Type checking (`tsc --noEmit`) and linting run clean.
 
 ---
+
+## Demo
+
+A 60-second run through the whole loop — signup, posting a quest, the completion
+cascade, chests, focus mode and the record screen. Recorded on the live app.
+
+[![Kairo demo](docs/kairo-demo-poster.jpg)](docs/kairo-demo.mp4)
 
 ## Screenshots
 
